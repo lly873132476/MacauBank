@@ -2,13 +2,15 @@
 import { RouterLink, RouterView, useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { useThemeStore } from './stores/theme'
+import { useUiStore } from './stores/ui' // Import UI store
 import { computed } from 'vue'
 
 const { t, locale } = useI18n()
 const themeStore = useThemeStore()
+const uiStore = useUiStore() // Use UI store
 const route = useRoute()
 
-// 判断是否为认证页面
+// 判断是否为认证页面 (用于内容全屏布局)
 const isAuthPage = computed(() => route.path === '/auth')
 
 // 切换语言
@@ -37,11 +39,13 @@ const themeIcon = computed(() => themeStore.isDark ? 'sun-o' : 'moon-o')
           <span class="brand-text">{{ t('app.title') }}</span>
         </div>
         <div class="navbar-right">
-          <div class="icon-btn-light" @click="toggleTheme">
-            <van-icon :name="themeIcon" size="20" />
+          <div class="icon-btn-light pill-btn" @click="toggleTheme" title="切换主题">
+            <van-icon :name="themeIcon" size="18" />
+            <span class="btn-label">主题</span>
           </div>
-          <div class="icon-btn-light" @click="switchLanguage">
+          <div class="icon-btn-light pill-btn" @click="switchLanguage" title="切换语言">
             <span class="lang-text">{{ locale === 'zh-CN' ? '繁' : '简' }}</span>
+            <span class="btn-label">语言</span>
           </div>
         </div>
       </div>
@@ -57,7 +61,7 @@ const themeIcon = computed(() => themeStore.isDark ? 'sun-o' : 'moon-o')
     </div>
 
     <!-- 悬浮底部标签栏 -->
-    <div v-if="!isAuthPage" class="floating-tabbar-wrapper">
+    <div v-if="!isAuthPage" class="floating-tabbar-wrapper" :class="{ 'ui-hidden': uiStore.isGlobalPopupOpen }">
       <div class="floating-tabbar soft-card">
         <router-link to="/home" class="tab-item" active-class="active">
           <div class="tab-icon">
@@ -108,73 +112,108 @@ const themeIcon = computed(() => themeStore.isDark ? 'sun-o' : 'moon-o')
   padding: 12px 16px;
   display: flex;
   justify-content: center;
-  pointer-events: none; /* 让点击穿透padding区域 */
+  pointer-events: none;
 }
 
 .floating-navbar {
   width: 100%;
   max-width: 480px;
-  height: 60px;
+  height: 56px; /* Slightly smaller height for elegance */
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
+  padding: 0 6px 0 16px;
   pointer-events: auto;
-  border-radius: var(--radius-md);
+  border-radius: 28px; /* Full pill shape */
+  background: rgba(255, 255, 255, 0.85); /* More opaque */
+  backdrop-filter: blur(20px) saturate(180%); /* Stronger blur */
+  box-shadow: 
+    0 8px 24px -6px rgba(0,0,0,0.08), /* Softer shadow */
+    0 0 0 1px rgba(0,0,0,0.03) inset; /* Softer border */
+  border: 1px solid rgba(255,255,255,0.4); /* Softer white border */
+}
+
+.dark .floating-navbar {
+  background: rgba(43, 45, 48, 0.85); /* IDEA Surface with transparency */
+  box-shadow: 
+    0 8px 24px -6px rgba(0,0,0,0.6), /* Softer dark shadow */
+    0 0 0 1px rgba(255,255,255,0.03) inset; /* Softer dark border */
+  border-color: rgba(255,255,255,0.1); /* Dark mode border */
 }
 
 .navbar-left {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
 }
 
 .brand-icon {
-  width: 32px;
-  height: 32px;
-  background: var(--gradient-main);
-  border-radius: 10px;
+  width: 28px;
+  height: 28px;
+  background: linear-gradient(135deg, #2563EB 0%, #3B82F6 100%);
+  border-radius: 8px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: white;
-  box-shadow: var(--shadow-sm);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
 }
 
 .brand-text {
-  font-size: 18px;
+  font-size: 17px;
   font-weight: 800;
-  color: var(--text-main);
+  color: var(--text-main); /* Theme aware */
   letter-spacing: -0.5px;
 }
 
 .navbar-right {
   display: flex;
-  gap: 8px;
+  gap: 6px;
 }
 
 .icon-btn-light {
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%; /* Circular buttons */
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--text-main);
   cursor: pointer;
-  transition: all 0.2s;
-  background: var(--bg-body); /* 浅色背景下的按钮底色 */
-  box-shadow: var(--shadow-sm);
-  border: 1px solid rgba(0,0,0,0.05);
+  transition: all 0.2s ease;
+  background: rgba(255, 255, 255, 0.8); /* Softer white */
+  border: 1px solid rgba(0,0,0,0.05); /* Softer border */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.03); /* Softer shadow */
 }
 
-.icon-btn-light:hover {
-  background: rgba(0,0,0,0.05);
-  transform: translateY(-2px);
+.dark .icon-btn-light {
+  background: rgba(43, 45, 48, 0.8); /* IDEA Surface for dark mode */
+  border-color: rgba(255,255,255,0.08); /* Softer dark border */
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.pill-btn {
+  width: auto;
+  padding: 0 12px;
+  border-radius: 20px;
+  gap: 6px;
+}
+
+.btn-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.icon-btn-light:active {
+  transform: scale(0.92);
+  background: white;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  color: var(--color-primary);
 }
 
 .lang-text {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
 }
 
@@ -197,11 +236,25 @@ const themeIcon = computed(() => themeStore.isDark ? 'sun-o' : 'moon-o')
   bottom: 20px;
   left: 0;
   right: 0;
-  z-index: 100;
+  z-index: 90;
   display: flex;
   justify-content: center;
   padding: 0 16px;
   pointer-events: none;
+  transition: all 0.3s ease; /* Add transition */
+}
+
+.floating-navbar-wrapper {
+  transition: all 0.3s ease; /* Add transition for top bar too */
+}
+
+.ui-hidden {
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(20px) scale(0.95); /* Move down and shrink slightly */
+}
+.floating-navbar-wrapper.ui-hidden {
+  transform: translateY(-20px) scale(0.95); /* Move up for top bar */
 }
 
 .floating-tabbar {
@@ -214,6 +267,13 @@ const themeIcon = computed(() => themeStore.isDark ? 'sun-o' : 'moon-o')
   padding: 0 10px;
   pointer-events: auto;
   border-radius: var(--radius-md);
+  background: var(--bg-surface); /* Use theme surface color, opaque */
+  box-shadow: var(--shadow-card); /* Use theme shadow */
+  border: 1px solid rgba(255,255,255,0.5); /* Light border */
+}
+
+.dark .floating-tabbar {
+  border-color: rgba(255,255,255,0.1); /* Dark mode border */
 }
 
 .tab-item {
@@ -256,12 +316,12 @@ const themeIcon = computed(() => themeStore.isDark ? 'sun-o' : 'moon-o')
 .tab-item-center {
   width: 56px;
   height: 56px;
-  background: var(--gradient-main);
+  background: var(--gradient-brand); /* Fix: use defined gradient */
   border-radius: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
+  color: white; /* Ensure icon is white */
   box-shadow: var(--shadow-float);
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
   transform: rotate(45deg); /* 菱形风格 */

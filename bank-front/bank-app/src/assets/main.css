@@ -24,31 +24,59 @@
   /* --- 质感系统 (辨识度的关键) --- */
   /* 卡片阴影：多层投影，营造扎实的悬浮感 - 更加柔和现代 */
   --shadow-card: 
-    0 2px 4px -1px rgba(0, 0, 0, 0.02), 
-    0 8px 20px -4px rgba(0, 0, 0, 0.04),
+    0 2px 8px -2px rgba(0, 0, 0, 0.05), /* Softer start */
+    0 12px 28px -6px rgba(0, 0, 0, 0.08), /* Softer spread */
     0 0 0 1px rgba(0, 0, 0, 0.02); 
     
   /* 浮动阴影：用于按钮 - 增强悬浮感 */
   --shadow-float: 
-    0 10px 25px -5px rgba(37, 99, 235, 0.3),
-    0 4px 10px -3px rgba(37, 99, 235, 0.2);
+    0 12px 32px -8px rgba(37, 99, 235, 0.25), /* Softer primary */
+    0 4px 10px -4px rgba(37, 99, 235, 0.15); /* Softer secondary */
   
   /* 圆角 */
-  --radius-card: 24px;
-  --radius-btn: 16px;
-  --radius-icon: 14px;
-  
+  --radius-card: 28px; /* Slightly more rounded */
+  --radius-btn: 18px;
+  --radius-icon: 16px;  
   --font-num: 'Plus Jakarta Sans', sans-serif;
   --font-body: 'Inter', sans-serif;
 }
 
-/* 深色模式适配 */
+/* 深色模式适配 - 夜晚主题 (IDEA Style) */
 .dark {
-  --bg-app: #0F172A;
-  --bg-surface: #1E293B;
-  --text-main: #F9FAFB;
-  --text-sub: #9CA3AF;
-  --shadow-card: 0 4px 20px rgba(0,0,0,0.4);
+  /* 核心色板 - IDEA Style Night */
+  --color-primary: #548AF7; /* IDEA Blue */
+  --color-primary-light: #7AAFFF;
+  --color-primary-dark: #3F75E0;
+  
+  --gradient-brand: linear-gradient(135deg, #3F75E0 0%, #548AF7 100%); /* Adjusted for IDEA blue */
+  --gradient-gold: linear-gradient(135deg, #CC8C2D 0%, #B47A29 100%); /* Muted gold */
+  
+  /* 背景色 - 深邃灰 */
+  --bg-app: #1E1F22; /* IDEA Background */
+  --bg-surface: #2B2D30; /* IDEA Surface */
+  
+  /* 文本色 */
+  --text-main: #BCBEC4; /* IDEA Main Text */
+  --text-sub: #7C7E82;  /* IDEA Sub Text */
+  
+  /* 质感系统 */
+--shadow-card: 
+  0 0 0 1px rgba(255, 255, 255, 0.04), /* Softer border */
+  0 8px 20px -6px rgba(0, 0, 0, 0.6); /* Softer spread, less harsh black */
+  
+--shadow-float: 
+  0 10px 28px -8px rgba(0, 0, 0, 0.8), /* Softer spread */
+  0 0 0 1px rgba(255, 255, 255, 0.08); /* Softer border */
+
+/* Vant 变量覆盖 */
+--van-background-2: var(--bg-surface) !important;
+--van-popup-background: var(--bg-surface) !important;
+--van-dialog-background: var(--bg-surface) !important;
+--van-action-sheet-item-background: var(--bg-surface) !important;
+--van-action-sheet-cancel-padding-top: 0 !important;
+--van-text-color: var(--text-main) !important;
+--van-gray-6: var(--text-sub) !important;
+--van-border-color: rgba(255,255,255,0.06) !important; /* Softer border */
 }
 
 /* 全局重置 */
@@ -72,7 +100,7 @@ body {
   max-width: 480px;
   margin: 0 auto;
   min-height: 100vh;
-  padding-bottom: 100px;
+  /* padding-bottom: 100px; Removed to prevent double padding and scroll */
   position: relative;
 }
 
@@ -92,7 +120,7 @@ body {
 }
 
 /* 1. 通用内容卡片 - 辨识度核心 */
-.app-card {
+.app-card, .soft-card {
   background: var(--bg-surface);
   border-radius: var(--radius-card);
   padding: 20px;
@@ -103,8 +131,9 @@ body {
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
-.dark .app-card {
+.dark .app-card, .dark .soft-card {
   border-top: 1px solid rgba(255,255,255,0.05);
+  background: var(--bg-surface); /* 强制深色模式背景 */
 }
 
 /* 交互反馈 - 统一悬浮效果 */
@@ -261,4 +290,19 @@ body {
   --van-nav-bar-background: transparent !important;
   --van-nav-bar-title-text-color: var(--text-main) !important;
   --van-nav-bar-icon-color: var(--text-main) !important;
+  /* Global popup safe area padding to avoid overlap with floating bottom bar */
+  --van-popup-round-border-radius: 24px !important;
+}
+
+/* Fix for popup overlapping bottom bar */
+.van-popup, 
+.van-overlay, 
+.van-action-sheet,
+.van-share-sheet {
+  z-index: 20000 !important; /* Ensure popups cover everything including the tab bar */
+}
+
+/* Optional: keep safe area padding for aesthetics on iPhone X+ */
+.van-popup--bottom.van-popup--round {
+  padding-bottom: env(safe-area-inset-bottom, 20px);
 }

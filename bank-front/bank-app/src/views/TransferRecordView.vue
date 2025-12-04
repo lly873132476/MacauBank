@@ -1,92 +1,78 @@
 <template>
-  <div class="transfer-record">
-    <!-- 页面标题 -->
+  <div class="transfer-record-page">
+    <!-- 顶部导航栏 (占位，如果全局有则不需要，这里为了对其TransferView) -->
+    <div class="header-placeholder"></div>
+
+    <!-- 页面标题区域 -->
     <div class="page-header">
-      <div class="header-content">
-        <div class="header-icon">
-          <van-icon name="records" size="28" />
-        </div>
-        <div class="header-info">
-          <h1 class="page-title">转账记录</h1>
-          <p class="page-subtitle">
-            <van-icon name="arrow" size="12" />
-            查看您的转账历史记录
-          </p>
-        </div>
-      </div>
+      <h1 class="page-title">转账记录</h1>
+      <p class="page-subtitle">查看您的资金往来详情</p>
     </div>
 
-    <!-- 筛选条件 -->
-    <div class="filter-section">
-      <div class="filter-item">
-        <van-field
-          v-model="filterForm.currency"
-          label="币种"
-          placeholder="请选择币种"
-          readonly
-          @click="showCurrencyPicker = true"
-        />
+    <!-- 筛选条件 - 玻璃拟态卡片 -->
+    <div class="filter-bar glass-panel">
+      <div class="filter-item" @click="showCurrencyPicker = true">
+        <span class="filter-label">币种</span>
+        <div class="filter-value">
+          {{ filterForm.currency || '全部' }}
+          <van-icon name="arrow-down" />
+        </div>
       </div>
-      <div class="filter-item">
-        <van-field
-          v-model="filterForm.status"
-          label="状态"
-          placeholder="请选择状态"
-          readonly
-          @click="showStatusPicker = true"
-        />
+      <div class="divider-vertical"></div>
+      <div class="filter-item" @click="showStatusPicker = true">
+        <span class="filter-label">状态</span>
+        <div class="filter-value">
+          {{ getStatusLabel(filterForm.status) || '全部' }}
+          <van-icon name="arrow-down" />
+        </div>
       </div>
-      <div class="filter-actions">
-        <van-button type="primary" @click="loadTransferRecords">查询</van-button>
-        <van-button @click="resetFilter">重置</van-button>
+      <!-- 查询按钮 -->
+      <div class="search-btn clickable" @click="loadTransferRecords">
+        <van-icon name="search" />
       </div>
     </div>
 
     <!-- 转账记录列表 -->
     <div class="records-list">
-      <van-empty v-if="transferRecords.length === 0" description="暂无转账记录" />
-      <div v-else class="record-item" v-for="record in transferRecords" :key="record.id">
-        <div class="record-header">
-          <div class="record-type" :class="getTransferTypeClass(record.transferType)">
-            {{ getTransferTypeText(record.transferType) }}
+      <van-empty v-if="transferRecords.length === 0" description="暂无转账记录" class="empty-state" />
+      
+      <div v-else class="record-card app-card clickable" v-for="record in transferRecords" :key="record.id">
+        <div class="card-top">
+          <div class="record-main-info">
+            <div class="avatar-icon" :class="getTransferTypeClass(record.transferType)">
+              <van-icon :name="getTransferTypeIcon(record.transferType)" />
+            </div>
+            <div class="text-info">
+              <div class="payee-name">{{ formatAccountNumber(record.toAccountNumber) }}</div>
+              <div class="time-text">{{ formatTime(record.createTime) }}</div>
+            </div>
           </div>
-          <div class="record-status" :class="getStatusClass(record.status)">
+          <div class="amount-info">
+            <span class="amount-text font-num">-{{ record.amount.toFixed(2) }}</span>
+            <span class="currency-badge">{{ record.currencyCode }}</span>
+          </div>
+        </div>
+        
+        <div class="card-divider"></div>
+        
+        <div class="card-bottom">
+          <div class="status-tag" :class="getStatusClass(record.status)">
             {{ getStatusText(record.status) }}
           </div>
-        </div>
-        <div class="record-content">
-          <div class="record-amount">
-            <span class="currency">{{ record.currencyCode }}</span>
-            <span class="amount">{{ record.amount.toFixed(2) }}</span>
+          <div class="fee-info font-num" v-if="record.fee > 0">
+            手续费 {{ record.fee.toFixed(2) }}
           </div>
-          <div class="record-info">
-            <div class="info-item">
-              <span class="label">收款账户:</span>
-              <span class="value">{{ formatAccountNumber(record.toAccountNumber) }}</span>
-            </div>
-            <div class="info-item">
-              <span class="label">手续费:</span>
-              <span class="value">{{ record.fee.toFixed(2) }} {{ record.currencyCode }}</span>
-            </div>
-            <div class="info-item">
-              <span class="label">时间:</span>
-              <span class="value">{{ formatTime(record.createTime) }}</span>
-            </div>
-            <div class="info-item" v-if="record.remark">
-              <span class="label">备注:</span>
-              <span class="value">{{ record.remark }}</span>
-            </div>
-          </div>
-        </div>
-        <div class="record-footer">
-          <span class="transaction-id">交易ID: {{ record.id }}</span>
         </div>
       </div>
     </div>
 
+    <!-- 底部留白 -->
+    <div class="bottom-spacer"></div>
+
     <!-- 币种选择器 -->
-    <van-popup v-model:show="showCurrencyPicker" round position="bottom">
+    <van-popup v-model:show="showCurrencyPicker" round position="bottom" class="glass-popup">
       <van-picker
+        title="选择币种"
         :columns="currencyColumns"
         @confirm="onCurrencyConfirm"
         @cancel="showCurrencyPicker = false"
@@ -94,8 +80,9 @@
     </van-popup>
 
     <!-- 状态选择器 -->
-    <van-popup v-model:show="showStatusPicker" round position="bottom">
+    <van-popup v-model:show="showStatusPicker" round position="bottom" class="glass-popup">
       <van-picker
+        title="选择状态"
         :columns="statusColumns"
         @confirm="onStatusConfirm"
         @cancel="showStatusPicker = false"
@@ -105,17 +92,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAccountStore } from '../stores/account'
+import { useUiStore } from '../stores/ui'
 import { showToast } from 'vant'
 
 const { t } = useI18n()
 const accountStore = useAccountStore()
+const uiStore = useUiStore()
 
 const transferRecords = ref<any[]>([])
 const showCurrencyPicker = ref(false)
 const showStatusPicker = ref(false)
+
+watch([showCurrencyPicker, showStatusPicker], ([c, s]) => {
+  uiStore.setPopupOpen(c || s)
+})
 
 // 筛选表单
 const filterForm = ref({
@@ -175,287 +168,152 @@ const resetFilter = () => {
 const onCurrencyConfirm = ({ selectedOptions }: any) => {
   filterForm.value.currency = selectedOptions[0].value
   showCurrencyPicker.value = false
+  loadTransferRecords() // Auto search
 }
 
 // 状态选择确认
 const onStatusConfirm = ({ selectedOptions }: any) => {
   filterForm.value.status = selectedOptions[0].value
   showStatusPicker.value = false
+  loadTransferRecords() // Auto search
 }
 
-// 获取转账类型文本
-const getTransferTypeText = (type: string) => {
-  switch (type) {
-    case 'NORMAL':
-      return '普通转账'
-    case 'CROSS_BORDER':
-      return '跨境汇款'
-    default:
-      return type
-  }
+const getStatusLabel = (val: string) => {
+  const found = statusColumns.find(c => c.value === val)
+  return found ? found.text : val
+}
+
+// 获取转账类型图标
+const getTransferTypeIcon = (type: string) => {
+  return type === 'CROSS_BORDER' ? 'globe-o' : 'exchange'
 }
 
 // 获取转账类型样式类
 const getTransferTypeClass = (type: string) => {
-  switch (type) {
-    case 'NORMAL':
-      return 'type-normal'
-    case 'CROSS_BORDER':
-      return 'type-cross-border'
-    default:
-      return ''
-  }
+  return type === 'CROSS_BORDER' ? 'icon-purple' : 'icon-blue'
 }
 
 // 获取状态文本
 const getStatusText = (status: string) => {
-  switch (status) {
-    case 'SUCCESS':
-      return '成功'
-    case 'FAILED':
-      return '失败'
-    case 'PROCESSING':
-      return '处理中'
-    default:
-      return status
+  const map: Record<string, string> = {
+    'SUCCESS': '转账成功',
+    'FAILED': '转账失败',
+    'PROCESSING': '处理中'
   }
+  return map[status] || status
 }
 
 // 获取状态样式类
 const getStatusClass = (status: string) => {
-  switch (status) {
-    case 'SUCCESS':
-      return 'status-success'
-    case 'FAILED':
-      return 'status-failed'
-    case 'PROCESSING':
-      return 'status-processing'
-    default:
-      return ''
+  const map: Record<string, string> = {
+    'SUCCESS': 'tag-success',
+    'FAILED': 'tag-failed',
+    'PROCESSING': 'tag-warning'
   }
+  return map[status] || ''
 }
 
 // 格式化账户号码
 const formatAccountNumber = (accountNumber: string) => {
+  if (!accountNumber) return '未知账户'
   if (accountNumber.length <= 4) return accountNumber
-  return '****' + accountNumber.slice(-4)
+  return '账户 *' + accountNumber.slice(-4)
 }
 
 // 格式化时间
 const formatTime = (time: string) => {
-  return new Date(time).toLocaleString('zh-CN')
+  if (!time) return ''
+  const date = new Date(time)
+  return `${date.getMonth() + 1}月${date.getDate()}日 ${date.getHours()}:${date.getMinutes().toString().padStart(2, '0')}`
 }
 </script>
 
 <style scoped>
-.transfer-record {
-  padding: 12px;
-  background: transparent;
-  min-height: 100vh;
+.transfer-record-page {
+  min-height: calc(100vh - 80px - 100px);
+  background-color: #F8F9FA;
+  background-image: 
+    radial-gradient(circle at 10% 20%, rgba(37, 99, 235, 0.04) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, rgba(236, 72, 153, 0.04) 0%, transparent 40%);
+  padding: 0 20px;
+  overflow-y: auto;
 }
 
-/* 页面标题 */
-.page-header {
-  padding: 16px 4px 20px;
-}
+.header-placeholder { height: 20px; }
 
-.header-content {
+.page-header { margin-bottom: 24px; }
+.page-title { font-size: 28px; font-weight: 800; color: var(--text-main); margin: 0 0 4px 0; letter-spacing: -0.5px; }
+.page-subtitle { font-size: 14px; color: var(--text-sub); font-weight: 500; }
+
+/* 筛选栏 */
+.filter-bar {
   display: flex;
   align-items: center;
-  gap: 16px;
-}
-
-.header-icon {
-  width: 56px;
-  height: 56px;
+  padding: 8px 8px;
+  margin-bottom: 24px;
   border-radius: 16px;
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  box-shadow: 0 8px 20px rgba(79, 172, 254, 0.3);
-  flex-shrink: 0;
+  gap: 12px;
 }
-
-.page-title {
-  font-size: 24px;
-  font-weight: 800;
-  color: #1a1a2e;
-  margin: 0 0 4px 0;
-  letter-spacing: -0.5px;
-}
-
-.page-subtitle {
-  font-size: 13px;
-  color: #6b7280;
-  margin: 0;
-  font-weight: 400;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-
-/* 筛选条件 */
-.filter-section {
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 16px;
-  margin-bottom: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-}
-
 .filter-item {
-  margin-bottom: 12px;
-}
-
-.filter-actions {
-  display: flex;
-  gap: 12px;
-}
-
-.filter-actions .van-button {
   flex: 1;
-}
-
-/* 转账记录列表 */
-.records-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-}
-
-.record-item {
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  border: 1px solid rgba(0, 0, 0, 0.04);
-}
-
-.record-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #f0f0f0;
-}
-
-.record-type {
-  font-size: 14px;
-  font-weight: 600;
-  padding: 4px 12px;
-  border-radius: 20px;
-}
-
-.type-normal {
-  background: rgba(102, 126, 234, 0.1);
-  color: #667eea;
-}
-
-.type-cross-border {
-  background: rgba(240, 147, 251, 0.1);
-  color: #f093fb;
-}
-
-.record-status {
-  font-size: 12px;
-  font-weight: 500;
-  padding: 2px 10px;
+  justify-content: center;
+  padding: 8px 12px;
   border-radius: 12px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.filter-item:active { background: rgba(0,0,0,0.03); }
+.filter-label { font-size: 11px; color: var(--text-sub); font-weight: 600; margin-bottom: 2px; }
+.filter-value { display: flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 700; color: var(--text-main); }
+.divider-vertical { width: 1px; height: 24px; background: rgba(0,0,0,0.06); }
+.search-btn {
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  background: var(--color-primary);
+  color: white;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+}
+.search-btn:active { transform: scale(0.95); }
+
+/* 列表 */
+.records-list { display: flex; flex-direction: column; gap: 16px; }
+.record-card { padding: 20px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.6); }
+
+.card-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.record-main-info { display: flex; gap: 12px; align-items: center; }
+.avatar-icon {
+  width: 44px; height: 44px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+}
+.icon-blue { background: #EFF6FF; color: #2563EB; }
+.icon-purple { background: #FDF4FF; color: #C026D3; }
+
+.text-info { display: flex; flex-direction: column; gap: 2px; }
+.payee-name { font-size: 15px; font-weight: 700; color: var(--text-main); }
+.time-text { font-size: 12px; color: var(--text-sub); font-weight: 500; }
+
+.amount-info { text-align: right; }
+.amount-text { display: block; font-size: 18px; font-weight: 700; color: var(--text-main); }
+.currency-badge { 
+  font-size: 10px; font-weight: 700; color: var(--text-sub); 
+  background: #F3F4F6; padding: 2px 6px; border-radius: 6px;
 }
 
-.status-success {
-  background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
-}
+.card-divider { height: 1px; background: #F3F4F6; margin: 16px 0; }
 
-.status-failed {
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
-}
+.card-bottom { display: flex; justify-content: space-between; align-items: center; }
+.status-tag { font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 8px; }
+.tag-success { background: #F0FDF4; color: #15803D; }
+.tag-failed { background: #FEF2F2; color: #B91C1C; }
+.tag-warning { background: #FFFBEB; color: #B45309; }
 
-.status-processing {
-  background: rgba(245, 158, 11, 0.1);
-  color: #f59e0b;
-}
+.fee-info { font-size: 12px; color: var(--text-sub); }
 
-.record-content {
-  margin-bottom: 12px;
-}
-
-.record-amount {
-  display: flex;
-  align-items: baseline;
-  margin-bottom: 12px;
-}
-
-.currency {
-  font-size: 14px;
-  color: #6b7280;
-  margin-right: 6px;
-}
-
-.amount {
-  font-size: 24px;
-  font-weight: 700;
-  color: #1a1a2e;
-}
-
-.record-info {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.info-item {
-  display: flex;
-  justify-content: space-between;
-  font-size: 14px;
-}
-
-.label {
-  color: #6b7280;
-  margin-right: 8px;
-}
-
-.value {
-  color: #1a1a2e;
-  text-align: right;
-  flex: 1;
-}
-
-.record-footer {
-  padding-top: 12px;
-  border-top: 1px solid #f0f0f0;
-}
-
-.transaction-id {
-  font-size: 12px;
-  color: #9ca3af;
-}
-
-/* 响应式优化 */
-@media (max-width: 767px) {
-  .transfer-record {
-    padding: 12px;
-  }
-  
-  .page-header {
-    padding: 12px 4px 16px;
-  }
-  
-  .filter-section {
-    padding: 12px;
-  }
-  
-  .record-item {
-    padding: 12px;
-  }
-  
-  .amount {
-    font-size: 20px;
-  }
-}
+.bottom-spacer { height: 40px; }
+.empty-state { padding: 40px 0; }
 </style>

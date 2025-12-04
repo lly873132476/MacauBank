@@ -126,7 +126,7 @@
 
     <!-- 退出登录 -->
     <div class="logout-section">
-      <button class="btn-primary" @click="logout">
+      <button class="logout-btn" @click="logout">
         <van-icon name="logout" />
         退出登录
       </button>
@@ -194,56 +194,65 @@ const logout = async () => {
 
 <style scoped>
 .profile {
-  padding: 0 16px 40px;
+  padding: 0 20px 120px;
   min-height: 100vh;
-  animation: fadeIn 0.8s ease;
+  background-color: var(--bg-app);
+  /* Modern Aurora Gradient */
+  background-image: 
+    radial-gradient(circle at 0% 0%, rgba(37, 99, 235, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 100% 0%, rgba(236, 72, 153, 0.05) 0%, transparent 50%);
+  animation: fadeIn 0.6s ease-out;
 }
 
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
 /* 个人信息头部 */
 .profile-header {
-  background: var(--bg-card);
-  border-radius: var(--radius-md);
-  padding: 24px;
-  margin: 20px 0;
-  box-shadow: var(--shadow-card);
+  background: var(--bg-surface);
+  backdrop-filter: blur(20px);
+  border-radius: 32px;
+  padding: 32px 24px 24px;
+  margin: 20px 0 32px;
+  box-shadow: 
+    0 12px 32px -8px rgba(0,0,0,0.08),
+    0 4px 12px -4px rgba(0,0,0,0.02),
+    inset 0 1px 0 rgba(255,255,255,0.1);
   position: relative;
   overflow: hidden;
+  border: 1px solid rgba(255,255,255,0.1);
 }
 
 .profile-info-row {
   display: flex;
   align-items: center;
   gap: 20px;
-  margin-bottom: 24px;
+  margin-bottom: 32px;
   position: relative;
   z-index: 2;
 }
 
 .profile-avatar {
-  width: 72px;
-  height: 72px;
+  width: 80px;
+  height: 80px;
   border-radius: 50%;
-  background: var(--gradient-main);
+  background: linear-gradient(135deg, #2563EB 0%, #60A5FA 100%);
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
-  position: relative;
-  z-index: 2;
-  box-shadow: 0 8px 16px rgba(37, 99, 235, 0.3);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
+  border: 4px solid var(--bg-surface);
 }
 
 .profile-avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  border-radius: 50%;
 }
 
 .avatar-text {
   font-size: 32px;
-  font-weight: 700;
+  font-weight: 800;
   color: white;
 }
 
@@ -252,11 +261,11 @@ const logout = async () => {
 }
 
 .profile-nickname {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 800;
   color: var(--text-main);
-  margin: 0 0 6px 0;
-  letter-spacing: 0.5px;
+  margin: 0 0 4px 0;
+  letter-spacing: -0.5px;
 }
 
 .profile-name {
@@ -266,26 +275,26 @@ const logout = async () => {
   display: flex;
   align-items: center;
   gap: 8px;
+  font-weight: 500;
 }
 
 .vip-badge {
-  background: var(--gradient-gold);
+  background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
   color: white;
   font-size: 10px;
   font-weight: 800;
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(245, 158, 11, 0.3);
 }
 
 .profile-stats {
   display: flex;
-  justify-content: space-around;
-  background: var(--bg-body);
-  border-radius: var(--radius-sm);
-  padding: 12px;
-  position: relative;
-  z-index: 2;
-  box-shadow: var(--shadow-sm);
+  justify-content: space-between;
+  background: var(--bg-app);
+  border-radius: 24px;
+  padding: 16px 24px;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
 }
 
 .stat-item {
@@ -296,103 +305,94 @@ const logout = async () => {
 }
 
 .stat-num {
-  font-size: 18px;
-  font-weight: 700;
+  font-size: 20px;
+  font-weight: 800;
   color: var(--text-main);
 }
 
 .stat-label {
-  font-size: 11px;
+  font-size: 12px;
+  font-weight: 600;
   color: var(--text-sub);
 }
 
 /* 菜单区域 */
 .menu-section {
-  margin-bottom: 24px;
+  margin-bottom: 32px;
 }
 
 .section-title {
-  font-size: 16px;
-  font-weight: 700;
+  font-size: 18px;
+  font-weight: 800;
   color: var(--text-main);
-  margin: 0 0 12px 4px;
+  margin: 0 0 16px 4px;
   display: flex;
   align-items: center;
   gap: 8px;
+  letter-spacing: -0.02em;
 }
 
 .menu-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  gap: 16px;
 }
 
 .menu-card {
-  padding: 16px;
+  background: var(--bg-surface);
+  border-radius: 24px;
+  padding: 20px;
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  align-items: flex-start;
   gap: 12px;
   cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: var(--shadow-card);
+}
+
+.menu-card:active {
+  transform: scale(0.96);
 }
 
 .menu-icon-box {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+  font-size: 24px;
   color: white;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
 }
 
-.bg-blue { background: linear-gradient(135deg, #3B82F6, #2563EB); }
-.bg-indigo { background: linear-gradient(135deg, #6366F1, #4F46E5); }
-.bg-cyan { background: linear-gradient(135deg, #06B6D4, #0891B2); }
-.bg-teal { background: linear-gradient(135deg, #14B8A6, #0D9488); }
+.bg-blue { background: linear-gradient(135deg, #3B82F6, #2563EB); box-shadow: 0 8px 16px rgba(59, 130, 246, 0.25); }
+.bg-indigo { background: linear-gradient(135deg, #6366F1, #4F46E5); box-shadow: 0 8px 16px rgba(99, 102, 241, 0.25); }
+.bg-cyan { background: linear-gradient(135deg, #06B6D4, #0891B2); box-shadow: 0 8px 16px rgba(6, 182, 212, 0.25); }
+.bg-teal { background: linear-gradient(135deg, #14B8A6, #0D9488); box-shadow: 0 8px 16px rgba(20, 184, 166, 0.25); }
 
 .menu-label {
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
   color: var(--text-main);
 }
 
 /* 消息列表 */
-.clean-tabs :deep(.van-tabs__wrap) {
-  margin-bottom: 16px;
-}
-
-.clean-tabs :deep(.van-tabs__nav) {
-  background: var(--bg-body) !important;
-  border-radius: var(--radius-sm);
-  padding: 4px;
-  box-shadow: var(--shadow-sm);
-}
-
-.clean-tabs :deep(.van-tab) {
-  border-radius: var(--radius-sm);
-  font-weight: 600;
-  color: var(--text-sub);
-}
-
-.clean-tabs :deep(.van-tab--active) {
-  background: white;
-  color: var(--color-primary);
-  box-shadow: var(--shadow-sm);
-}
-
 .messages-list {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
 }
 
 .message-card {
-  padding: 16px;
+  background: var(--bg-surface);
+  border-radius: 20px;
+  padding: 20px;
   display: flex;
-  gap: 12px;
+  gap: 16px;
   align-items: flex-start;
+  box-shadow: var(--shadow-card);
 }
 
 .message-icon-status {
@@ -400,10 +400,11 @@ const logout = async () => {
 }
 
 .message-icon-status .dot {
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   background: var(--color-primary);
   border-radius: 50%;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.15);
 }
 
 .message-body {
@@ -418,19 +419,20 @@ const logout = async () => {
 }
 
 .message-title {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--text-main);
   margin: 0;
 }
 
 .message-time {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-sub);
+  font-weight: 500;
 }
 
 .message-content {
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text-sub);
   margin: 0;
   line-height: 1.5;
@@ -444,31 +446,36 @@ const logout = async () => {
 }
 
 .gov-link {
-  padding: 16px;
+  background: var(--bg-surface);
+  border-radius: 20px;
+  padding: 16px 20px;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   text-decoration: none;
   color: var(--text-main);
+  box-shadow: var(--shadow-card);
+  transition: transform 0.2s;
 }
 
+.gov-link:active { transform: scale(0.98); }
+
 .gov-icon {
-  width: 36px;
-  height: 36px;
-  background: var(--bg-body);
-  border: 1px solid rgba(0,0,0,0.05);
-  border-radius: 10px;
+  width: 40px;
+  height: 40px;
+  background: var(--bg-app);
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-primary);
-  box-shadow: var(--shadow-sm);
+  color: var(--text-main);
+  font-size: 20px;
 }
 
 .gov-text {
   flex: 1;
-  font-weight: 600;
-  font-size: 14px;
+  font-weight: 700;
+  font-size: 15px;
 }
 
 .arrow-icon {
@@ -477,23 +484,26 @@ const logout = async () => {
 
 /* 退出登录 */
 .logout-section {
-  margin-top: 32px;
-  padding-bottom: 32px;
+  margin-top: 48px;
+  padding-bottom: 40px;
 }
 
 .logout-btn {
   width: 100%;
-  background: var(--color-danger);
-  color: white;
+  background: rgba(220, 38, 38, 0.1);
+  color: #EF4444;
   border: none;
-  border-radius: var(--radius-sm);
-  padding: 14px;
+  border-radius: 24px;
+  padding: 18px;
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   transition: all 0.2s;
 }
 
-.logout-btn:active { opacity: 0.9; transform: translateY(1px); }
+.logout-btn:active { background: rgba(220, 38, 38, 0.2); }
 </style>

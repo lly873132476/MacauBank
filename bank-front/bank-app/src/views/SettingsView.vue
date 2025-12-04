@@ -2,9 +2,6 @@
   <div class="settings">
     <!-- 顶部导航 -->
     <div class="settings-header">
-      <div class="header-left" @click="goBack">
-        <van-icon name="arrow-left" size="20" />
-      </div>
       <h1 class="header-title">应用设置</h1>
       <div class="header-right"></div>
     </div>
@@ -119,17 +116,16 @@ const themeIconName = computed(() => {
 const currentLanguageText = computed(() => {
   return locale.value === 'zh-CN' ? '简体中文' : '繁体中文'
 })
-
-// 返回上一页
-const goBack = () => {
-  router.back()
-}
 </script>
 
 <style scoped>
 .settings {
   min-height: 100vh;
-  background: transparent;
+  background-color: var(--bg-app);
+  /* Modern Aurora Gradient */
+  background-image: 
+    radial-gradient(circle at 0% 0%, rgba(37, 99, 235, 0.05) 0%, transparent 50%),
+    radial-gradient(circle at 100% 0%, rgba(236, 72, 153, 0.05) 0%, transparent 50%);
   animation: fadeIn 0.5s ease-in;
 }
 
@@ -137,62 +133,47 @@ const goBack = () => {
 
 /* 顶部导航 */
 .settings-header {
-  background: var(--bg-body);
-  padding: 16px;
+  background: var(--bg-surface);
+  backdrop-filter: blur(20px);
+  padding: 16px 20px; /* Adjust padding for no left button */
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center; /* Center content horizontally */
   position: sticky;
   top: 0;
   z-index: 10;
-  border-bottom: 1px solid rgba(0,0,0,0.05);
-  box-shadow: var(--shadow-sm);
-}
-
-.header-left {
-  width: 40px;
-  height: 40px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  color: var(--text-main);
-  transition: all 0.3s ease;
-}
-
-.header-left:active {
-  background: rgba(0,0,0,0.05);
-  transform: scale(0.9);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.02);
 }
 
 .header-title {
   font-size: 18px;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-main);
   margin: 0;
-  flex: 1;
+  /* flex: 1; Remove flex to allow auto center */
   text-align: center;
 }
 
 .header-right {
-  width: 40px;
+  /* width: 40px; Should be removed or made invisible if no right content */
+  /* Keep it as empty for now for balance if needed, or remove later if not. */
 }
 
 /* 设置内容 */
 .settings-content {
-  padding: 20px 16px;
+  padding: 24px 20px;
 }
 
 .settings-section {
-  margin-bottom: 24px;
+  margin-bottom: 32px;
 }
 
 .section-title {
   font-size: 14px;
-  font-weight: 700;
+  font-weight: 800;
   color: var(--text-sub);
-  margin: 0 0 12px 4px;
+  margin: 0 0 16px 8px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -202,12 +183,21 @@ const goBack = () => {
 
 /* 设置项 */
 .setting-item {
-  padding: 16px;
+  padding: 20px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   cursor: pointer;
-  margin-bottom: 12px;
+  margin-bottom: 16px;
+  background: var(--bg-surface);
+  border-radius: 24px;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.2s;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.setting-item:active {
+  transform: scale(0.98);
 }
 
 .item-left {
@@ -218,15 +208,15 @@ const goBack = () => {
 }
 
 .item-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 14px;
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 20px;
+  font-size: 22px;
   color: white;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.1);
 }
 
 .bg-blue { background: linear-gradient(135deg, #3B82F6, #2563EB); }
@@ -239,7 +229,7 @@ const goBack = () => {
 
 .item-label {
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--text-main);
   margin-bottom: 4px;
 }
@@ -247,6 +237,7 @@ const goBack = () => {
 .item-desc {
   font-size: 12px;
   color: var(--text-sub);
+  font-weight: 500;
 }
 
 .item-right {
@@ -257,8 +248,11 @@ const goBack = () => {
 
 .item-value {
   font-size: 14px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-primary);
+  background: var(--bg-app);
+  padding: 4px 10px;
+  border-radius: 8px;
 }
 
 .item-right .van-icon {

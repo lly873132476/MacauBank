@@ -28,6 +28,8 @@ interface Recipient {
   name: string;
   account: string;
   currency: string;
+  bankName?: string;
+  bankCode?: string;
 }
 
 interface TransferRecord {
@@ -129,9 +131,9 @@ export const useAccountStore = defineStore('account', {
       try {
         // Mock data for static preview
         this.recipients = [
-          { id: 1, name: '张三', account: '12345678', currency: 'MOP' },
-          { id: 2, name: '李四', account: '87654321', currency: 'HKD' },
-          { id: 3, name: '王五', account: '11223344', currency: 'CNY' }
+          { id: 1, name: '张三', account: '12345678', currency: 'MOP', bankName: '中国银行澳门分行', bankCode: 'BCMOMO00' },
+          { id: 2, name: '李四', account: '87654321', currency: 'HKD', bankName: '大丰银行', bankCode: 'DMBMMO00' },
+          { id: 3, name: '王五', account: '11223344', currency: 'CNY', bankName: '澳门国际银行', bankCode: 'ZBBAMO00' }
         ]
         return { success: true, data: this.recipients }
       } catch (error) {

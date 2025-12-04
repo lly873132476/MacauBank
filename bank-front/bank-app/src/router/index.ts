@@ -29,6 +29,11 @@ const router = createRouter({
       component: () => import('../views/TransferRecordView.vue')
     },
     {
+      path: '/transfer/recipient/add',
+      name: 'recipient-add',
+      component: () => import('../views/RecipientAddView.vue')
+    },
+    {
       path: '/profile',
       name: 'profile',
       component: () => import('../views/ProfileView.vue')
