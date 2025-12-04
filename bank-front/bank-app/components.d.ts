@@ -1,0 +1,44 @@
+
+export {}
+
+/* prettier-ignore */
+declare module 'vue' {
+  export interface GlobalComponents {
+    RouterLink: typeof import('vue-router')['RouterLink']
+    RouterView: typeof import('vue-router')['RouterView']
+    VanActionSheet: typeof import('vant/es')['ActionSheet']
+    VanButton: typeof import('vant/es')['Button']
+    VanCell: typeof import('vant/es')['Cell']
+    VanCellGroup: typeof import('vant/es')['CellGroup']
+    VanEmpty: typeof import('vant/es')['Empty']
+    VanField: typeof import('vant/es')['Field']
+    VanForm: typeof import('vant/es')['Form']
+    VanIcon: typeof import('vant/es')['Icon']
+    VanLoading: typeof import('vant/es')['Loading']
+    VanNavBar: typeof import('vant/es')['NavBar']
+    VanPicker: typeof import('vant/es')['Picker']
+    VanPopup: typeof import('vant/es')['Popup']
+    VanTab: typeof import('vant/es')['Tab']
+    VanTabs: typeof import('vant/es')['Tabs']
+  }
+}
+
+// For TSX support
+declare global {
+  const RouterLink: typeof import('vue-router')['RouterLink']
+  const RouterView: typeof import('vue-router')['RouterView']
+  const VanActionSheet: typeof import('vant/es')['ActionSheet']
+  const VanButton: typeof import('vant/es')['Button']
+  const VanCell: typeof import('vant/es')['Cell']
+  const VanCellGroup: typeof import('vant/es')['CellGroup']
+  const VanEmpty: typeof import('vant/es')['Empty']
+  const VanField: typeof import('vant/es')['Field']
+  const VanForm: typeof import('vant/es')['Form']
+  const VanIcon: typeof import('vant/es')['Icon']
+  const VanLoading: typeof import('vant/es')['Loading']
+  const VanNavBar: typeof import('vant/es')['NavBar']
+  const VanPicker: typeof import('vant/es')['Picker']
+  const VanPopup: typeof import('vant/es')['Popup']
+  const VanTab: typeof import('vant/es')['Tab']
+  const VanTabs: typeof import('vant/es')['Tabs']
+}
