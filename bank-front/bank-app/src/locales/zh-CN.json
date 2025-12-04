@@ -1,0 +1,88 @@
+{
+  "app": {
+    "title": "澳门银行"
+  },
+  "home": {
+    "title": "首页",
+    "assetOverview": "资产总览",
+    "scan": "扫一扫",
+    "transfer": "转账汇款",
+    "currencyExchange": "外币兑换",
+    "investment": "投资理财",
+    "billPayment": "生活缴费",
+    "totalAssets": "总资产估值 (MOP)"
+  },
+  "account": {
+    "title": "账户",
+    "cardList": "卡片列表",
+    "transactionHistory": "交易流水",
+    "currencyExchange": "外币兑换",
+    "exchangeRate": "汇率",
+    "fromCurrency": "源币种",
+    "toCurrency": "目标币种",
+    "amount": "金额",
+    "exchange": "兑换"
+  },
+  "transfer": {
+    "title": "转账",
+    "quickTransfer": "快速转账",
+    "payeeList": "常用收款人",
+    "crossBorder": "跨境汇款",
+    "aaPayment": "AA收款",
+    "redPacket": "红包",
+    "currency": "转账币种",
+    "verify": "预校验"
+  },
+  "profile": {
+    "title": "我的",
+    "personalInfo": "个人信息",
+    "updatePassword": "修改密码",
+    "setTransactionPassword": "设置交易密码",
+    "messageCenter": "消息中心",
+    "eGovernment": "电子政务",
+    "systemMessage": "系统消息",
+    "transactionNotice": "交易提醒",
+    "nickname": "昵称",
+    "nicknamePlaceholder": "请输入昵称",
+    "realName": "真实姓名",
+    "realNamePlaceholder": "请输入真实姓名",
+    "phone": "手机号",
+    "phonePlaceholder": "请输入手机号",
+    "email": "邮箱",
+    "emailPlaceholder": "请输入邮箱",
+    "idNumber": "身份证号",
+    "idNumberPlaceholder": "请输入身份证号",
+    "save": "保存",
+    "saveSuccess": "保存成功",
+    "saveFailed": "保存失败"
+  },
+  "auth": {
+    "register": "注册",
+    "login": "登录",
+    "password": "密码",
+    "transactionPassword": "交易密码",
+    "confirmTransactionPassword": "确认交易密码",
+    "oldPassword": "旧密码",
+    "newPassword": "新密码",
+    "confirmPassword": "确认密码",
+    "setTransactionPassword": "设置交易密码",
+    "updatePassword": "修改密码",
+    "updateTransactionPassword": "修改交易密码",
+    "passwordMismatch": "两次输入的密码不一致",
+    "passwordTooShort": "密码长度不能少于6位",
+    "passwordUpdateSuccess": "密码修改成功",
+    "passwordUpdateFailed": "密码修改失败",
+    "transactionPasswordSetSuccess": "交易密码设置成功",
+    "transactionPasswordSetFailed": "交易密码设置失败",
+    "oldPasswordPlaceholder": "请输入旧密码",
+    "newPasswordPlaceholder": "请输入新密码",
+    "confirmPasswordPlaceholder": "请再次输入新密码",
+    "transactionPasswordPlaceholder": "请输入交易密码",
+    "confirmTransactionPasswordPlaceholder": "请再次输入交易密码"
+  },
+  "common": {
+    "loading": "加载中...",
+    "confirm": "确认",
+    "cancel": "取消"
+  }
+}

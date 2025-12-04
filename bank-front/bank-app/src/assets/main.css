@@ -1,0 +1,264 @@
+/* 导入字体 */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap');
+
+:root {
+  /* --- 核心色板 --- */
+  /* 品牌色：专业、稳重的科技蓝 */
+  --color-primary: #2563EB; 
+  --color-primary-light: #3B82F6;
+  --color-primary-dark: #1D4ED8;
+  
+  /* 渐变：用于强调区域 (资产卡片、主按钮) */
+  --gradient-brand: linear-gradient(135deg, #2563EB 0%, #0EA5E9 100%);
+  --gradient-gold: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+  
+  /* 背景色：极淡的灰蓝，护眼且显质感 */
+  --bg-app: #F3F4F6; 
+  --bg-surface: #FFFFFF;
+  
+  /* 文本色：高对比度 */
+  --text-main: #111827; /* 深灰黑 */
+  --text-sub: #6B7280;   /* 次要灰 */
+  --text-white: #FFFFFF;
+  
+  /* --- 质感系统 (辨识度的关键) --- */
+  /* 卡片阴影：多层投影，营造扎实的悬浮感 - 更加柔和现代 */
+  --shadow-card: 
+    0 2px 4px -1px rgba(0, 0, 0, 0.02), 
+    0 8px 20px -4px rgba(0, 0, 0, 0.04),
+    0 0 0 1px rgba(0, 0, 0, 0.02); 
+    
+  /* 浮动阴影：用于按钮 - 增强悬浮感 */
+  --shadow-float: 
+    0 10px 25px -5px rgba(37, 99, 235, 0.3),
+    0 4px 10px -3px rgba(37, 99, 235, 0.2);
+  
+  /* 圆角 */
+  --radius-card: 24px;
+  --radius-btn: 16px;
+  --radius-icon: 14px;
+  
+  --font-num: 'Plus Jakarta Sans', sans-serif;
+  --font-body: 'Inter', sans-serif;
+}
+
+/* 深色模式适配 */
+.dark {
+  --bg-app: #0F172A;
+  --bg-surface: #1E293B;
+  --text-main: #F9FAFB;
+  --text-sub: #9CA3AF;
+  --shadow-card: 0 4px 20px rgba(0,0,0,0.4);
+}
+
+/* 全局重置 */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text-main);
+  background-color: var(--bg-app);
+  -webkit-font-smoothing: antialiased;
+}
+
+.app-layout {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100vh;
+  padding-bottom: 100px;
+  position: relative;
+}
+
+/* --- 组件样式库 --- */
+
+/* 0. 玻璃拟态通用类 */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.dark .glass-panel {
+  background: rgba(30, 41, 59, 0.7);
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+/* 1. 通用内容卡片 - 辨识度核心 */
+.app-card {
+  background: var(--bg-surface);
+  border-radius: var(--radius-card);
+  padding: 20px;
+  box-shadow: var(--shadow-card);
+  /* 微妙的边框高光，增加精致感 */
+  border-top: 1px solid rgba(255,255,255,0.8);
+  position: relative;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dark .app-card {
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+/* 交互反馈 - 统一悬浮效果 */
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 
+    0 12px 24px -6px rgba(0, 0, 0, 0.08), 
+    0 0 0 1px rgba(0, 0, 0, 0.02);
+}
+
+/* 2. 主按钮 - 带有微立体感 */
+.btn-primary {
+  background: var(--gradient-brand);
+  color: white;
+  border: none;
+  padding: 16px;
+  border-radius: var(--radius-btn);
+  font-weight: 600;
+  font-size: 16px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: var(--shadow-float);
+  /* 顶部微弱高光 */
+  box-shadow: 
+    0 4px 12px rgba(37, 99, 235, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: transform 0.1s, box-shadow 0.2s;
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.2);
+}
+
+/* 3. 图标容器 - 彩色微立体 */
+.icon-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-icon);
+  position: relative;
+  overflow: hidden;
+}
+
+/* 给图标增加一点通透感 */
+.icon-box::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 50%;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.25), transparent);
+  pointer-events: none;
+}
+
+/* 纹理工具类 - 增加高级感 */
+.texture-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.06'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+  pointer-events: none;
+  border-radius: inherit;
+}
+
+/* 流光溢彩动画 - 用于高级卡片 */
+.shimmer-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.shimmer-effect::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 50%;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    transparent 0%,
+    rgba(255, 255, 255, 0.15) 50%,
+    transparent 100%
+  );
+  transform: skewX(-25deg);
+  animation: shimmer 6s infinite;
+  pointer-events: none;
+}
+
+@keyframes shimmer {
+  0% { left: -100%; }
+  20% { left: 200%; }
+  100% { left: 200%; }
+}
+
+/* 交互反馈 - 统一按压效果 */
+.clickable {
+  cursor: pointer;
+  transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.clickable:active {
+  transform: scale(0.96);
+  opacity: 0.9;
+}
+
+/* 骨架屏动画 - 丝滑流光 */
+.skeleton {
+  background: #f0f2f5;
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0,
+    rgba(255, 255, 255, 0.6) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  background-size: 200% 100%;
+  background-repeat: no-repeat;
+  animation: skeleton-loading 1.5s infinite;
+  border-radius: 6px;
+}
+
+@keyframes skeleton-loading {
+  0% { background-position: -150% 0; }
+  100% { background-position: 150% 0; }
+}
+
+/* 列表交错入场动画 */
+.stagger-enter-active,
+.stagger-leave-active {
+  transition: all 0.4s ease;
+}
+.stagger-enter-from,
+.stagger-leave-to {
+  opacity: 0;
+  transform: translateY(15px);
+}
+
+/* 字体工具类 */
+.font-num { font-family: var(--font-num); letter-spacing: -0.02em; }
+.text-primary { color: var(--color-primary); }
+
+/* 4. Vant 覆盖 */
+:root {
+  --van-primary-color: var(--color-primary) !important;
+  --van-background-2: var(--bg-surface) !important;
+  --van-nav-bar-background: transparent !important;
+  --van-nav-bar-title-text-color: var(--text-main) !important;
+  --van-nav-bar-icon-color: var(--text-main) !important;
+}

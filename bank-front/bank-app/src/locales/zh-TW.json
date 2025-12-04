@@ -1,0 +1,88 @@
+{
+  "app": {
+    "title": "澳門銀行"
+  },
+  "home": {
+    "title": "首頁",
+    "assetOverview": "資產總覽",
+    "scan": "掃一掃",
+    "transfer": "轉帳匯款",
+    "currencyExchange": "外幣兌換",
+    "investment": "投資理財",
+    "billPayment": "生活繳費",
+    "totalAssets": "總資產估值 (MOP)"
+  },
+  "account": {
+    "title": "賬戶",
+    "cardList": "卡片列表",
+    "transactionHistory": "交易流水",
+    "currencyExchange": "外幣兌換",
+    "exchangeRate": "匯率",
+    "fromCurrency": "源幣種",
+    "toCurrency": "目標幣種",
+    "amount": "金額",
+    "exchange": "兌換"
+  },
+  "transfer": {
+    "title": "轉賬",
+    "quickTransfer": "快速轉帳",
+    "payeeList": "常用收款人",
+    "crossBorder": "跨境匯款",
+    "aaPayment": "AA收款",
+    "redPacket": "紅包",
+    "currency": "轉帳幣種",
+    "verify": "預校驗"
+  },
+  "profile": {
+    "title": "我的",
+    "personalInfo": "個人信息",
+    "updatePassword": "修改密碼",
+    "setTransactionPassword": "設定交易密碼",
+    "messageCenter": "消息中心",
+    "eGovernment": "電子政務",
+    "systemMessage": "系統消息",
+    "transactionNotice": "交易提醒",
+    "nickname": "暱稱",
+    "nicknamePlaceholder": "請輸入暱稱",
+    "realName": "真實姓名",
+    "realNamePlaceholder": "請輸入真實姓名",
+    "phone": "手機號",
+    "phonePlaceholder": "請輸入手機號",
+    "email": "郵箱",
+    "emailPlaceholder": "請輸入郵箱",
+    "idNumber": "身份證號",
+    "idNumberPlaceholder": "請輸入身份證號",
+    "save": "保存",
+    "saveSuccess": "保存成功",
+    "saveFailed": "保存失敗"
+  },
+  "auth": {
+    "register": "註冊",
+    "login": "登入",
+    "password": "密碼",
+    "transactionPassword": "交易密碼",
+    "confirmTransactionPassword": "確認交易密碼",
+    "oldPassword": "舊密碼",
+    "newPassword": "新密碼",
+    "confirmPassword": "確認密碼",
+    "setTransactionPassword": "設定交易密碼",
+    "updatePassword": "修改密碼",
+    "updateTransactionPassword": "修改交易密碼",
+    "passwordMismatch": "兩次輸入的密碼不一致",
+    "passwordTooShort": "密碼長度不能少於6位",
+    "passwordUpdateSuccess": "密碼修改成功",
+    "passwordUpdateFailed": "密碼修改失敗",
+    "transactionPasswordSetSuccess": "交易密碼設定成功",
+    "transactionPasswordSetFailed": "交易密碼設定失敗",
+    "oldPasswordPlaceholder": "請輸入舊密碼",
+    "newPasswordPlaceholder": "請輸入新密碼",
+    "confirmPasswordPlaceholder": "請再次輸入新密碼",
+    "transactionPasswordPlaceholder": "請輸入交易密碼",
+    "confirmTransactionPasswordPlaceholder": "請再次輸入交易密碼"
+  },
+  "common": {
+    "loading": "加載中...",
+    "confirm": "確認",
+    "cancel": "取消"
+  }
+}
