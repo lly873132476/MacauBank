@@ -31,7 +31,9 @@
     "aaPayment": "AA收款",
     "redPacket": "红包",
     "currency": "转账币种",
-    "verify": "预校验"
+    "verify": "预校验",
+    "recipientName": "收款人姓名",
+    "recipientNamePlaceholder": "请输入收款人姓名"
   },
   "profile": {
     "title": "我的",

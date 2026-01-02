@@ -1,0 +1,2 @@
+# key = 类的全限定名
+dubboContextFilter=com.macau.bank.common.rpc.filter.DubboContextFilter

@@ -146,7 +146,7 @@ const loadTransferRecords = async () => {
       filterForm.value.currency || undefined,
       filterForm.value.status || undefined
     )
-    if (result.success) {
+    if (result.success && result.data) {
       transferRecords.value = result.data
     } else {
       showToast('获取转账记录失败: ' + result.message)

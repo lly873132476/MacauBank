@@ -5,10 +5,10 @@
       <div class="profile-info-row">
         <div class="profile-avatar">
           <img v-if="profile?.avatar" :src="profile.avatar" alt="avatar" />
-          <span v-else class="avatar-text">{{ profile?.username?.charAt(0).toUpperCase() || 'U' }}</span>
+          <span v-else class="avatar-text">{{ profile?.userName?.charAt(0).toUpperCase() || 'U' }}</span>
         </div>
         <div class="profile-text">
-          <h2 class="profile-nickname">{{ profile?.username || '未设置' }}</h2>
+          <h2 class="profile-nickname">{{ profile?.userName || '未设置' }}</h2>
           <p class="profile-name">
             <span class="vip-badge">VIP</span>
             {{ profile?.name || '未设置' }}
@@ -44,21 +44,21 @@
           </div>
           <span class="menu-label">{{ t('profile.personalInfo') }}</span>
         </div>
-        
+
         <div class="menu-card soft-card card-hover" @click="$router.push('/profile/password')">
           <div class="menu-icon-box bg-indigo">
             <van-icon name="lock" />
           </div>
           <span class="menu-label">{{ t('profile.updatePassword') }}</span>
         </div>
-        
+
         <div class="menu-card soft-card card-hover" @click="$router.push('/profile/transaction-password')">
           <div class="menu-icon-box bg-cyan">
             <van-icon name="shield-o" />
           </div>
           <span class="menu-label">{{ t('profile.setTransactionPassword') }}</span>
         </div>
-        
+
         <div class="menu-card soft-card card-hover" @click="$router.push('/profile/settings')">
           <div class="menu-icon-box bg-teal">
             <van-icon name="setting" />
@@ -74,20 +74,21 @@
         <van-icon name="bell" />
         {{ t('profile.messageCenter') }}
       </h3>
-      
+
       <van-tabs v-model:active="activeTab" @change="onMessageTabChange" class="clean-tabs">
         <van-tab name="system" :title="t('profile.systemMessage')" />
         <van-tab name="transaction" :title="t('profile.transactionNotice')" />
       </van-tabs>
-      
+
       <div class="messages-list">
         <div
           v-for="message in (activeTab === 'system' ? messages : transactionMessages)"
           :key="message.id"
           class="message-card soft-card"
+          @click="handleMessageClick(message)"
         >
           <div class="message-icon-status">
-            <div class="dot"></div>
+            <div v-if="!message.read" class="dot"></div>
           </div>
           <div class="message-body">
             <div class="message-header">
@@ -159,7 +160,7 @@ onMounted(async () => {
     userStore.fetchMessages(),
     userStore.fetchTransactionMessages()
   ])
-  
+
   if (profileResult.success) {
     profile.value = profileResult.data
   } else {
@@ -167,24 +168,30 @@ onMounted(async () => {
       message: profileResult.message || '获取用户信息失败',
       position: 'top'
     })
-    if (profileResult.code && isAuthError(profileResult.code)) {
+    if (profileResult.code && (isAuthError(profileResult.code) || profileResult.code === 102002)) {
       await authStore.logout()
       setTimeout(() => {
         router.replace('/auth')
       }, 1000)
     }
   }
-  
-  if (messagesResult.success) {
+
+  if (messagesResult.success && messagesResult.data) {
     messages.value = messagesResult.data
   }
 
-  if (transactionResult.success) {
+  if (transactionResult.success && transactionResult.data) {
     transactionMessages.value = transactionResult.data
   }
 })
 
 const onMessageTabChange = (name: string) => {}
+
+const handleMessageClick = async (message: any) => {
+  if (!message.read) {
+    await userStore.markAsRead(message.id)
+  }
+}
 
 const logout = async () => {
   await authStore.logout()
@@ -198,7 +205,7 @@ const logout = async () => {
   min-height: 100vh;
   background-color: var(--bg-app);
   /* Modern Aurora Gradient */
-  background-image: 
+  background-image:
     radial-gradient(circle at 0% 0%, rgba(37, 99, 235, 0.05) 0%, transparent 50%),
     radial-gradient(circle at 100% 0%, rgba(236, 72, 153, 0.05) 0%, transparent 50%);
   animation: fadeIn 0.6s ease-out;
@@ -213,7 +220,7 @@ const logout = async () => {
   border-radius: 32px;
   padding: 32px 24px 24px;
   margin: 20px 0 32px;
-  box-shadow: 
+  box-shadow:
     0 12px 32px -8px rgba(0,0,0,0.08),
     0 4px 12px -4px rgba(0,0,0,0.02),
     inset 0 1px 0 rgba(255,255,255,0.1);

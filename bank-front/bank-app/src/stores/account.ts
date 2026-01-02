@@ -1,26 +1,23 @@
 import { defineStore } from 'pinia'
-import { accountApi, currencyApi, transferApi } from '../services/api'
+import { accountApi, currencyApi, transferApi, type AccountResponse, type AssetSummaryResponse } from '../services/api'
 
-interface AccountInfo {
-  id: number;
-  currency?: string;
-  currencyCode?: string;
-  name?: string;
+export interface DisplayAccount extends AccountResponse {
+  displayId: string;
+  currencyCode: string;
   balance: number;
-}
-
-interface AccountSummary {
-  totalMopValue: number;
-  accounts: AccountInfo[];
+  accountName: string;
 }
 
 interface TransactionRecord {
   id: number;
-  date: string;
-  description: string;
+  txnId: string;
+  currencyCode: string;
+  direction: 'D' | 'C';
   amount: number;
-  currency: string;
-  mopValue: number;
+  balance: number;
+  bizType: string;
+  bizDesc: string;
+  transTime: string;
 }
 
 interface Recipient {
@@ -48,8 +45,8 @@ interface TransferRecord {
 
 export const useAccountStore = defineStore('account', {
   state: () => ({
-    accounts: [] as AccountInfo[],
-    summary: null as AccountSummary | null,
+    accounts: [] as DisplayAccount[],
+    summary: null as AssetSummaryResponse | null,
     transactions: [] as TransactionRecord[],
     recipients: [] as Recipient[],
     transferRecords: [] as TransferRecord[], // 添加转账记录状态
@@ -60,17 +57,33 @@ export const useAccountStore = defineStore('account', {
     // 获取资产总览
     async fetchSummary() {
       try {
-        // Mock data for static preview
-        this.summary = {
-          totalMopValue: 128500.50,
-          accounts: [
-            { id: 1, currencyCode: 'MOP', balance: 50000.00 },
-            { id: 2, currencyCode: 'HKD', balance: 25000.00 },
-            { id: 3, currencyCode: 'CNY', balance: 10000.00 },
-            { id: 4, currencyCode: 'USD', balance: 5000.00 }
-          ]
+        const response = await accountApi.getSummary()
+        if (response.code === 200) {
+          this.summary = response.data
+          // 总是同步更新打平后的账户列表，确保数据一致且无需额外请求
+          if (response.data.accounts) {
+            const flattened: any[] = []
+            response.data.accounts.forEach(acc => {
+              if (acc.balances && acc.balances.length > 0) {
+                acc.balances.forEach(bal => {
+                  flattened.push({
+                    ...acc,
+                    // 覆盖/添加兼容字段
+                    id: acc.id,
+                    displayId: `${acc.accountNo}_${bal.currencyCode}`, // 唯一标识
+                    currencyCode: bal.currencyCode,
+                    balance: bal.availableBalance,
+                    accountName: `${bal.currencyCode} 储蓄账户`
+                  })
+                })
+              }
+            })
+            this.accounts = flattened
+          }
+          return { success: true, data: this.summary }
+        } else {
+          return { success: false, message: response.message }
         }
-        return { success: true, data: this.summary }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : '获取资产总览失败';
         return { success: false, message: errorMessage }
@@ -80,14 +93,29 @@ export const useAccountStore = defineStore('account', {
     // 获取账户列表
     async fetchAccounts() {
       try {
-        // Mock data for static preview
-        this.accounts = [
-          { id: 1, currencyCode: 'MOP', name: '储蓄账户', balance: 50000.00 },
-          { id: 2, currencyCode: 'HKD', name: '往来账户', balance: 25000.00 },
-          { id: 3, currencyCode: 'CNY', name: '人民币账户', balance: 10000.00 },
-          { id: 4, currencyCode: 'USD', name: '美元账户', balance: 5000.00 }
-        ]
-        return { success: true, data: this.accounts }
+        const response = await accountApi.getAccountList()
+        if (response.code === 200) {
+          const flattened: any[] = []
+          response.data.forEach(acc => {
+            if (acc.balances && acc.balances.length > 0) {
+              acc.balances.forEach(bal => {
+                flattened.push({
+                  ...acc,
+                  // 覆盖/添加兼容字段
+                  id: acc.id,
+                  displayId: `${acc.accountNo}_${bal.currencyCode}`,
+                  currencyCode: bal.currencyCode,
+                  balance: bal.availableBalance,
+                  accountName: `${bal.currencyCode} 储蓄账户`
+                })
+              })
+            }
+          })
+          this.accounts = flattened
+          return { success: true, data: this.accounts }
+        } else {
+          return { success: false, message: response.message }
+        }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : '获取账户列表失败';
         return { success: false, message: errorMessage }
@@ -95,12 +123,26 @@ export const useAccountStore = defineStore('account', {
     },
 
     // 获取交易流水
-    async fetchTransactions(accountId: string, currencyCode: string) {
+    async fetchTransactions(currencyCode?: string) {
       try {
-        const response = await accountApi.getTransactionRecords(accountId, currencyCode)
+        const response = await accountApi.getTransactionRecords({
+          currencyCode,
+          page: 1,
+          pageSize: 50
+        })
         if (response.code === 200) {
-          this.transactions = response.data
-          return { success: true, data: response.data }
+          this.transactions = response.data.records.map(apiRecord => ({
+            id: apiRecord.id,
+            txnId: apiRecord.txnId,
+            currencyCode: apiRecord.currencyCode,
+            direction: apiRecord.direction,
+            amount: apiRecord.amount,
+            balance: apiRecord.balance,
+            bizType: apiRecord.bizType,
+            bizDesc: apiRecord.bizDesc,
+            transTime: apiRecord.transTime
+          }))
+          return { success: true, data: response.data.records }
         } else {
           return { success: false, message: response.message }
         }
@@ -176,12 +218,12 @@ export const useAccountStore = defineStore('account', {
 
     // 根据币种获取账户
     getAccountByCurrency(currency: string) {
-      return this.accounts.find(account => account.currencyCode === currency || account.currency === currency)
+      return this.accounts.find(account => account.currencyCode === currency)
     },
 
     // 获取默认账户（MOP账户）
     getDefaultAccount() {
-      return this.accounts.find(account => account.currencyCode === 'MOP' || account.currency === 'MOP') || this.accounts[0]
+      return this.accounts.find(account => account.currencyCode === 'MOP') || this.accounts[0]
     }
   }
 })

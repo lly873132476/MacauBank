@@ -10,10 +10,10 @@
 
 | 接口名称 | 前端方法 | 后端接口 | 状态 |
 |---------|---------|---------|------|
-| 注册 | `authApi.registerExecute()` | `POST /auth/register/execute` | ✅ |
+| 注册 | `authApi.registerExecute()` | `POST /auth/register` | ✅ |
 | 登录 | `authApi.login()` | `POST /auth/login` | ✅ |
 | 登出 | `authApi.logout()` | `POST /auth/logout` | ✅ |
-| 获取用户信息 | `authApi.getUserInfo()` | `GET /auth/user/info` | ✅ |
+| 获取用户信息 | `authApi.getUserInfo()` | `GET /user/profile/me` | ✅ |
 | 验证Token | `authApi.verifyToken()` | `GET /auth/token/verify` | ✅ |
 | 修改登录密码 | `authApi.updatePassword()` | `POST /auth/password/update` | ✅ |
 | 修改交易密码 | `authApi.updateTransactionPassword()` | `POST /auth/security/transactionPwd/update` | ✅ |

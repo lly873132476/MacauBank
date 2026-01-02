@@ -30,7 +30,7 @@ const themeIcon = computed(() => themeStore.isDark ? 'sun-o' : 'moon-o')
 <template>
   <div class="app-layout">
     <!-- 悬浮顶部导航栏 -->
-    <div v-if="!isAuthPage" class="floating-navbar-wrapper">
+    <div v-if="!isAuthPage && route.meta.showGlobalNav" class="floating-navbar-wrapper">
       <div class="floating-navbar soft-card">
         <div class="navbar-left">
           <div class="brand-icon">
@@ -52,7 +52,7 @@ const themeIcon = computed(() => themeStore.isDark ? 'sun-o' : 'moon-o')
     </div>
 
     <!-- 页面内容区域 -->
-    <div class="content" :class="{ 'content-full': isAuthPage }">
+    <div class="content" :class="{ 'content-full': isAuthPage || !route.meta.showGlobalNav }">
       <router-view v-slot="{ Component }">
         <transition name="fade-scale" mode="out-in">
           <component :is="Component" />
@@ -61,7 +61,7 @@ const themeIcon = computed(() => themeStore.isDark ? 'sun-o' : 'moon-o')
     </div>
 
     <!-- 悬浮底部标签栏 -->
-    <div v-if="!isAuthPage" class="floating-tabbar-wrapper" :class="{ 'ui-hidden': uiStore.isGlobalPopupOpen }">
+    <div v-if="!isAuthPage && route.meta.showGlobalNav" class="floating-tabbar-wrapper" :class="{ 'ui-hidden': uiStore.isGlobalPopupOpen }">
       <div class="floating-tabbar soft-card">
         <router-link to="/home" class="tab-item" active-class="active">
           <div class="tab-icon">
@@ -79,7 +79,7 @@ const themeIcon = computed(() => themeStore.isDark ? 'sun-o' : 'moon-o')
 
         <div class="tab-item-center-wrapper">
           <router-link to="/transfer" class="tab-item-center">
-            <van-icon name="exchange" size="24" />
+            <van-icon name="balance-pay" size="28" />
           </router-link>
         </div>
         

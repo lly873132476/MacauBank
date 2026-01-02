@@ -1,0 +1,98 @@
+server:
+  port: 8085
+
+spring:
+  application:
+    name: user-service
+  messages:
+    basename: i18n/messages_user
+    encoding: UTF-8
+  cloud: # Spring Cloud Nacos Discovery 配置
+    nacos:
+      discovery:
+        namespace: ${NACOS_NAMESPACE:bank-dev}
+        group: ${NACOS_SC_SPACE:SC-GROUP}
+        server-addr: ${NACOS_SERVER_ADDR:localhost}:8848
+        port: ${server.port} # 明确注册HTTP端口
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:3306/macau_bank_user?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: 123456
+  # Redis配置
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: MacauBankRedis2025
+      timeout: 10000ms
+      # 现在默认是 lettuce，建议通用配置写在 pool 下
+      lettuce:
+        pool:
+          max-active: 100
+          max-idle: 20
+          min-idle: 10
+          max-wait: -1ms
+
+dubbo:
+  application:
+    name: user-service-rpc
+    group: DUBBO-GROUP
+    qos-enable: true
+    qos-port: 22225
+    qos-accept-foreign-ip: false
+  registry:
+    address: nacos://${NACOS_SERVER_ADDR:localhost}:8848
+    parameters:
+      namespace: ${NACOS_NAMESPACE:bank-dev}
+      group: DUBBO-GROUP
+  protocol:
+    name: dubbo
+    port: 20885
+  scan:
+    base-packages: com.macau.bank.user.service
+
+mybatis-plus:
+  type-aliases-package: com.macau.bank.domain.user.entity
+  mapper-locations: classpath*:/mapper/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true
+
+rocketmq:
+  name-server: 127.0.0.1:9876
+  producer:
+    group: user-service-group
+    send-message-timeout: 3000
+
+# -------------------------------------------------------------------------
+# Seata 分布式事务配置 (适配 Seata 2.x / SCA 2022.x+)
+# -------------------------------------------------------------------------
+seata:
+  enabled: true
+  application-id: ${spring.application.name} # 自动使用服务名
+
+  # 【关键修改】旧的 spring.cloud.alibaba.seata.tx-service-group 已废弃
+  # 事务分组名，这个名字要和 Seata Server (TC) 端的映射配置一致
+  tx-service-group: default_tx_group
+
+  # 👇👇👇 必须加上这一行！强制开启数据源自动代理 👇👇👇
+  enable-auto-data-source-proxy: true
+
+  # 注册中心配置 (告诉微服务去哪里找 Seata Server)
+  registry:
+    type: nacos
+    nacos:
+      application: seata-server # Seata Server 在 Nacos 里的服务名
+      server-addr: ${NACOS_SERVER_ADDR:localhost}:8848
+      group: SEATA_GROUP        # Seata Server 的分组
+      namespace: ${NACOS_NAMESPACE:bank-dev}
+
+  # 配置中心配置 (读取 Seata 的配置项)
+  config:
+    type: file
+
+  # 含义：将本地的 default_tx_group 映射到名为 "default" 的 Seata Server 集群
+  service:
+    vgroup-mapping:
+      default_tx_group: default

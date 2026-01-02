@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.macau.bank.transfer.infra.mapper.TransferOrderMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="transferOrderResultMap" type="com.macau.bank.transfer.infra.persistent.po.TransferOrderPO">
+        <id column="id" property="id"/>
+        <result column="txn_id" property="txnId"/>
+        <result column="external_txn_id" property="externalTxnId"/>
+        <result column="idempotent_key" property="idempotentKey"/>
+        
+        <result column="user_no" property="userNo"/>
+        <result column="payer_account_no" property="payerAccountNo"/>
+        <result column="payer_account_name" property="payerAccountName"/>
+        <result column="payer_currency" property="payerCurrency"/>
+        
+        <result column="payee_account_no" property="payeeAccountNo"/>
+        <result column="payee_account_name" property="payeeAccountName"/>
+        <result column="payee_bank_code" property="payeeBankCode"/>
+        <result column="payee_swift_code" property="payeeSwiftCode"/>
+        <result column="payee_fps_id" property="payeeFpsId"/>
+        
+        <result column="amount" property="amount"/>
+        <result column="currency_code" property="currencyCode"/>
+        <result column="fee" property="fee"/>
+        <result column="fee_type" property="feeType"/>
+        
+        <result column="transfer_type" property="transferType"/>
+        <result column="transfer_channel" property="transferChannel"/>
+        <result column="purpose_code" property="purposeCode"/>
+        <result column="reference_no" property="referenceNo"/>
+        
+        <result column="status" property="status"/>
+        <result column="fail_reason" property="failReason"/>
+        
+        <result column="aml_status" property="amlStatus"/>
+        <result column="risk_status" property="riskStatus"/>
+        
+        <result column="deleted" property="deleted"/>
+        <result column="version" property="version"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+</mapper>

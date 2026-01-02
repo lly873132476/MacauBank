@@ -3,7 +3,7 @@ import { authApi } from '../services/api'
 
 interface UserInfo {
   userId: string;
-  username: string;
+  userName: string;
   name: string;
 }
 
@@ -11,23 +11,51 @@ export const useAuthStore = defineStore('auth', {
   state: () => ({
     token: localStorage.getItem('token') || '',
     isAuthenticated: !!localStorage.getItem('token'),
-    userInfo: null as UserInfo | null
+    userInfo: JSON.parse(localStorage.getItem('userInfo') || 'null') as UserInfo | null,
+    // KYC 等级 (0: 未认证, 1: 初级认证, 2: 完整开户)
+    kycLevel: parseInt(localStorage.getItem('kycLevel') || '0')
   }),
 
+  getters: {
+    isAccountOpened: (state) => state.kycLevel >= 2,
+    isLoggedIn: (state) => state.isAuthenticated
+  },
+
   actions: {
+    setToken(token: string) {
+      this.token = token
+      this.isAuthenticated = true
+      localStorage.setItem('token', token)
+    },
+
+    setUserInfo(info: any) {
+      this.userInfo = info
+      localStorage.setItem('userInfo', JSON.stringify(info))
+      // 如果没有 kycLevel，默认为 0
+      if (!localStorage.getItem('kycLevel')) {
+        this.kycLevel = 0
+        localStorage.setItem('kycLevel', '0')
+      }
+    },
+
+    completeKyc() {
+      this.kycLevel = 2
+      localStorage.setItem('kycLevel', '2')
+    },
+
     // 登录
-    async login(username: string, password: string) {
+    async login(userName: string, password: string) {
       try {
-        const response = await authApi.login({ username, password })
+        const response = await authApi.login({ userName, password })
         if (response.code === 200) {
-          this.token = response.data.token
-          this.isAuthenticated = true
-          this.userInfo = {
-            userId: response.data.userId,
-            username: response.data.username,
+          this.setToken(response.data.token)
+          // 模拟用户信息包含 userNo
+          const userInfo = {
+            userId: response.data.userNo || response.data.userId, // 兼容后端字段
+            userName: response.data.userName,
             name: response.data.name
           }
-          localStorage.setItem('token', this.token)
+          this.setUserInfo(userInfo)
           return { success: true, message: response.message }
         } else {
           return { success: false, message: response.message }
@@ -48,7 +76,10 @@ export const useAuthStore = defineStore('auth', {
         this.token = ''
         this.isAuthenticated = false
         this.userInfo = null
+        this.kycLevel = 0
         localStorage.removeItem('token')
+        localStorage.removeItem('userInfo')
+        localStorage.removeItem('kycLevel')
       }
     },
 
@@ -57,8 +88,25 @@ export const useAuthStore = defineStore('auth', {
       try {
         const response = await authApi.getUserInfo()
         if (response.code === 200) {
-          this.userInfo = response.data
-          return { success: true, data: response.data }
+          const profile = response.data
+          
+          // 合并现有信息与新获取的 Profile
+          const updatedInfo = {
+            ...this.userInfo, // 保留原有的 userId, userName
+            name: profile.realNameCn || profile.name || this.userInfo?.name || '',
+            // 可以扩展更多字段
+          } as UserInfo
+
+          this.userInfo = updatedInfo
+          localStorage.setItem('userInfo', JSON.stringify(updatedInfo))
+          
+          // 同步后端返回的 KYC Level
+          if (profile.kycLevel !== undefined) {
+            this.kycLevel = profile.kycLevel
+            localStorage.setItem('kycLevel', profile.kycLevel.toString())
+          }
+          
+          return { success: true, data: profile }
         } else {
           return { success: false, message: response.message }
         }

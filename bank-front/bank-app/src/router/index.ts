@@ -3,6 +3,13 @@ import HomeView from '../views/HomeView.vue'
 
 const router = createRouter({
   history: createWebHashHistory(import.meta.env.BASE_URL),
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) {
+      return savedPosition
+    } else {
+      return { top: 0 }
+    }
+  },
   routes: [
     {
       path: '/',
@@ -11,17 +18,25 @@ const router = createRouter({
     {
       path: '/home',
       name: 'home',
-      component: HomeView
+      component: HomeView,
+      meta: { showGlobalNav: true }
+    },
+    {
+      path: '/open-account',
+      name: 'open-account',
+      component: () => import('../views/OpenAccountView.vue')
     },
     {
       path: '/account',
       name: 'account',
-      component: () => import('../views/AccountView.vue')
+      component: () => import('../views/AccountView.vue'),
+      meta: { showGlobalNav: true }
     },
     {
       path: '/transfer',
       name: 'transfer',
-      component: () => import('../views/TransferView.vue')
+      component: () => import('../views/TransferView.vue'),
+      meta: { showGlobalNav: true }
     },
     {
       path: '/transfer/records',
@@ -34,9 +49,16 @@ const router = createRouter({
       component: () => import('../views/RecipientAddView.vue')
     },
     {
+      path: '/transfer/recipient/edit/:id',
+      name: 'recipient-edit',
+      component: () => import('../views/RecipientAddView.vue'),
+      props: true
+    },
+    {
       path: '/profile',
       name: 'profile',
-      component: () => import('../views/ProfileView.vue')
+      component: () => import('../views/ProfileView.vue'),
+      meta: { showGlobalNav: true }
     },
     {
       path: '/profile/info',
@@ -55,13 +77,14 @@ const router = createRouter({
     },
     {
       path: '/profile/settings',
-      name: 'profile-settings', // 修改 name 以避免冲突，更具体
+      name: 'profile-settings',
       component: () => import('../views/SettingsView.vue')
     },
     {
-      path: '/settings', // 新增 /settings 路径
+      path: '/settings',
       name: 'settings',
-      component: () => import('../views/SettingsView.vue')
+      component: () => import('../views/SettingsView.vue'),
+      meta: { showGlobalNav: true }
     },
     {
       path: '/auth',

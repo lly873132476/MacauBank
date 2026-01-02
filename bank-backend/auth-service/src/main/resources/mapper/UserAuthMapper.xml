@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.macau.bank.auth.infrastructure.mapper.UserAuthMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="userResultMap" type="com.macau.bank.auth.domain.entity.UserAuth">
+        <id column="id" property="id"/>
+        <result column="user_no" property="userNo"/>
+        <result column="user_name" property="userName"/>
+        <result column="mobile_prefix" property="mobilePrefix"/>
+        <result column="mobile" property="mobile"/>
+        <result column="login_password" property="loginPassword"/>
+        <result column="transaction_password" property="transactionPassword"/>
+        <result column="status" property="status"/>
+        <result column="last_login_time" property="lastLoginTime"/>
+        <result column="last_login_ip" property="lastLoginIp"/>
+        <result column="deleted" property="deleted"/>
+        <result column="version" property="version"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <!-- 完整字段列表（包含敏感信息） -->
+    <sql id="Full_Column_List">
+        id, user_no, user_name, mobile_prefix, mobile, login_password, transaction_password, status, last_login_time, last_login_ip, deleted, version, create_time, update_time
+    </sql>
+
+    <!-- 通过user_no查询用户 -->
+    <select id="selectByUserNo" parameterType="string" resultMap="userResultMap">
+        SELECT <include refid="Full_Column_List"/>
+        FROM user_auth
+        WHERE user_no = #{userNo} AND deleted = 0
+    </select>
+
+</mapper>

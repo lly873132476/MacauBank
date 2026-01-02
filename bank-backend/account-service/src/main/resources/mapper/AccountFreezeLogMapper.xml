@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.macau.bank.account.infra.mapper.AccountFreezeLogMapper">
+
+    <resultMap id="BaseResultMap" type="com.macau.bank.account.infra.persistent.po.AccountFreezeLogPO">
+        <id column="id" property="id"/>
+        <result column="flow_no" property="flowNo"/>
+        <result column="account_no" property="accountNo"/>
+        <result column="currency_code" property="currencyCode"/>
+        <result column="amount" property="amount"/>
+        <result column="freeze_type" property="freezeType"/>
+        <result column="reason" property="reason"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+        <result column="unfreeze_time" property="unfreezeTime"/>
+    </resultMap>
+
+</mapper>
