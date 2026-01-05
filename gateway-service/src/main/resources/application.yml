@@ -1,0 +1,99 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gateway-service
+  messages:
+    basename: i18n/messages_gateway
+    encoding: UTF-8
+  cloud: # Spring Cloud Nacos Discovery 配置
+    nacos:
+      discovery:
+        namespace: ${NACOS_NAMESPACE:bank-dev}
+        group: ${NACOS_SC_SPACE:SC-GROUP}
+        server-addr: localhost:8848
+    gateway:
+      discovery:
+        locator:
+          enabled: true # 开启自动路由
+          lower-case-service-id: true
+      globalcors:
+        # 👇 1. 关键开关：让 CORS 配置对所有路由处理器生效
+        add-to-simple-url-handler-mapping: true
+
+        # 👇 2. 跨域详细配置
+        cors-configurations:
+          '[/**]': # 匹配所有路径
+            # 允许跨域的源 (生产环境建议换成具体域名)
+            allowed-origin-patterns: "*"
+
+            # 允许的方法
+            allowed-methods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+
+            # 允许的头
+            allowed-headers: "*"
+
+            # 允许携带凭证 (Token)
+            allowed-credentials: true
+
+            # 预检缓存时间 (秒)
+            max-age: 3600
+      # 路由配置
+      routes:
+        - id: auth-service
+          uri: lb://auth-service
+          predicates:
+            - Path=/auth/**
+        - id: user-service
+          uri: lb://user-service
+          predicates:
+            - Path=/user/**
+        - id: account-service
+          uri: lb://account-service
+          predicates:
+            - Path=/account/**
+        - id: transfer-service
+          uri: lb://transfer-service
+          predicates:
+            - Path=/transfer/**
+        - id: forex-service
+          uri: lb://forex-service
+          predicates:
+            - Path=/forex/**,/currency/**
+        - id: message-service
+          uri: lb://message-service
+          predicates:
+            - Path=/message/**
+  # 添加Redis配置
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: MacauBankRedis2025
+      timeout: 3000ms
+      lettuce:
+        pool:
+          max-active: 100
+          max-idle: 20
+          min-idle: 10
+          max-wait: -1ms
+
+springdoc:
+  swagger-ui:
+    # 启用聚合模式
+    urls:
+      - name: 鉴权服务 (Auth)
+        url: /auth/v3/api-docs
+      - name: 账户服务 (Account)
+        url: /account/v3/api-docs
+      - name: 转账服务 (Transfer)
+        url: /transfer/v3/api-docs
+      - name: 用户服务 (User)
+        url: /user/v3/api-docs
+    # 这里的 url 路径必须与你在 Gateway 中配置的路由断言 (Predicate) 路径一致
