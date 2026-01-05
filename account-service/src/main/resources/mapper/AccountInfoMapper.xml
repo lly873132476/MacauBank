@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.macau.bank.account.infra.mapper.AccountInfoMapper">
+
+    <resultMap id="BaseResultMap" type="com.macau.bank.account.infra.persistent.po.AccountInfoPO">
+        <id column="id" property="id"/>
+        <result column="user_no" property="userNo"/>
+        <result column="account_no" property="accountNo"/>
+        <result column="card_number" property="cardNumber"/>
+        <result column="account_category" property="accountCategory"/>
+        <result column="account_type" property="accountType"/>
+        <result column="status" property="status"/>
+        <result column="risk_level" property="riskLevel"/>
+        <result column="open_branch_code" property="openBranchCode"/>
+        <result column="open_branch_name" property="openBranchName"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+</mapper>

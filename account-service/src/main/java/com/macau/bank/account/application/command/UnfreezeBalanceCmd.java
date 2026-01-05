@@ -1,0 +1,34 @@
+package com.macau.bank.account.application.command;
+
+import com.macau.bank.common.framework.web.model.BaseRequest;
+import lombok.*;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+
+/**
+ * 解冻余额指令
+ */
+@EqualsAndHashCode(callSuper = true)
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+public class UnfreezeBalanceCmd extends BaseRequest implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    /** 账户号 */
+    private String accountNo;
+
+    /** 币种 */
+    private String currencyCode;
+
+    /** 解冻金额 */
+    private BigDecimal amount;
+
+    /** 业务流水号 */
+    private String flowNo;
+
+    /** 解冻原因 */
+    private String reason;
+}

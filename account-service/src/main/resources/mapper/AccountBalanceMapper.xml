@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.macau.bank.account.infra.mapper.AccountBalanceMapper">
+
+    <resultMap id="BaseResultMap" type="com.macau.bank.account.infra.persistent.po.AccountBalancePO">
+        <id column="id" property="id"/>
+        <result column="account_no" property="accountNo"/>
+        <result column="currency_code" property="currencyCode"/>
+        <result column="balance" property="balance"/>
+        <result column="available_balance" property="availableBalance"/>
+        <result column="frozen_amount" property="frozenAmount"/>
+        <result column="total_income" property="totalIncome"/>
+        <result column="total_outcome" property="totalOutcome"/>
+        <result column="version" property="version"/>
+        <result column="last_flow_id" property="lastFlowId"/>
+        <result column="mac_code" property="macCode"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <update id="updateBalance">
+        UPDATE account_balance
+        SET
+            balance = balance + #{amount},
+            available_balance = available_balance + #{amount},
+            update_time = NOW(),
+            version = version + 1
+        WHERE account_no = #{accountNo}
+          AND currency_code = #{currencyCode}
+          AND available_balance + #{amount} >= 0
+          AND version = #{version}
+    </update>
+
+    <update id="freezeBalance">
+        UPDATE account_balance
+        SET
+            available_balance = available_balance - #{amount},
+            frozen_amount = frozen_amount + #{amount},
+            update_time = NOW(),
+            version = version + 1
+        WHERE account_no = #{accountNo}
+          AND currency_code = #{currencyCode}
+          AND available_balance - #{amount} >= 0
+          AND version = #{version}
+    </update>
+
+    <update id="unfreezeBalance">
+        UPDATE account_balance
+        SET
+            available_balance = available_balance + #{amount},
+            frozen_amount = frozen_amount - #{amount},
+            update_time = NOW(),
+            version = version + 1
+        WHERE account_no = #{accountNo}
+          AND currency_code = #{currencyCode}
+          AND frozen_amount - #{amount} >= 0
+          AND version = #{version}
+    </update>
+
+    <update id="depositBalance">
+        UPDATE account_balance
+        SET
+            balance = balance + #{amount},
+            available_balance = available_balance + #{amount},
+            total_income = total_income + #{amount},
+            update_time = NOW(),
+            version = version + 1
+        WHERE account_no = #{accountNo}
+          AND currency_code = #{currencyCode}
+          AND version = #{version}
+    </update>
+
+    <select id="findUserBalance" resultMap="BaseResultMap">
+        SELECT b.*
+        FROM account_balance b
+        JOIN account_info i ON b.account_no = i.account_no
+        WHERE i.user_no = #{userNo}
+          AND b.currency_code = #{currencyCode}
+        LIMIT 1
+    </select>
+
+</mapper>

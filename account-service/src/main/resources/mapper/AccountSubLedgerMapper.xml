@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.macau.bank.account.infra.mapper.AccountSubLedgerMapper">
+
+    <resultMap id="BaseResultMap" type="com.macau.bank.account.infra.persistent.po.AccountSubLedgerPO">
+        <id column="id" property="id"/>
+        <result column="voucher_no" property="voucherNo"/>
+        <result column="biz_no" property="bizNo"/>
+        <result column="user_no" property="userNo"/>
+        <result column="account_no" property="accountNo"/>
+        <result column="currency_code" property="currencyCode"/>
+        <result column="cd_flag" property="cdFlag"/>
+        <result column="amount" property="amount"/>
+        <result column="balance" property="balance"/>
+        <result column="status" property="status"/>
+        <result column="check_status" property="checkStatus"/>
+        <result column="settle_status" property="settleStatus"/>
+        <result column="biz_type" property="bizType"/>
+        <result column="biz_desc" property="bizDesc"/>
+        <result column="opponent_info" property="opponentInfo" typeHandler="com.baomidou.mybatisplus.extension.handlers.JacksonTypeHandler"/>
+        <result column="acct_date" property="acctDate"/>
+        <result column="trans_time" property="transTime"/>
+        <result column="reconcile_time" property="reconcileTime"/>
+    </resultMap>
+
+</mapper>
