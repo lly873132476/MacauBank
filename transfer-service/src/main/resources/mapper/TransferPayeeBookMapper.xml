@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.macau.bank.transfer.infra.mapper.TransferPayeeBookMapper">
+    <resultMap id="BaseResultMap" type="com.macau.bank.transfer.infra.persistent.po.TransferPayeeBookPO">
+        <id column="id" property="id"/>
+        <result column="user_no" property="userNo"/>
+        <result column="payee_type" property="payeeType"/>
+        <result column="is_top" property="isTop"/>
+        <result column="alias_name" property="aliasName"/>
+        <result column="payee_name" property="payeeName"/>
+        <result column="avatar" property="avatar"/>
+        <result column="account_no" property="accountNo"/>
+        <result column="currency_code" property="currencyCode"/>
+        <result column="transfer_type" property="transferType"/>
+        <result column="bank_name" property="bankName"/>
+        <result column="bank_code" property="bankCode"/>
+        <result column="region_code" property="regionCode"/>
+        <result column="swift_code" property="swiftCode"/>
+        <result column="clearing_code" property="clearingCode"/>
+        <result column="bank_address" property="bankAddress"/>
+        <result column="is_internal" property="isInternal"/>
+        <result column="last_trans_time" property="lastTransTime"/>
+        <result column="total_trans_count" property="totalTransCount"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+</mapper>
