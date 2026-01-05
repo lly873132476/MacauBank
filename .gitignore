@@ -1,0 +1,54 @@
+# Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# IDE
+.idea/
+*.iws
+*.iml
+*.ipr
+.project
+.classpath
+.settings/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+log/
+
+# Spring Boot
+/spring-boot-*.log
+
+# Redis
+dump.rdb
+
+# Temporary files
+*.tmp
+*.bak
+*.cache
+
+# Build
+/build/
+/dist/
+
+# Node (if any)
+node_modules/
+package-lock.json
+
+/Job Docs/
