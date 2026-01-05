@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.macau.bank.user.infrastructure.mapper.UserInfoMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="userInfoResultMap" type="com.macau.bank.user.domain.entity.UserInfo">
+        <id column="id" property="id"/>
+        <result column="user_no" property="userNo"/>
+        <result column="real_name_cn" property="realNameCn"/>
+        <result column="real_name_en" property="realNameEn"/>
+        <result column="id_card_type" property="idCardType"/>
+        <result column="id_card_no" property="idCardNo"/>
+        <result column="id_card_expiry" property="idCardExpiry"/>
+        <result column="id_card_issue_country" property="idCardIssueCountry"/>
+        <result column="id_card_issue_org" property="idCardIssueOrg"/>
+        <result column="id_card_img_front" property="idCardImgFront"/>
+        <result column="id_card_img_back" property="idCardImgBack"/>
+        <result column="kyc_level" property="kycLevel"/>
+        <result column="kyc_status" property="kycStatus"/>
+        <result column="user_level" property="userLevel"/>
+        <result column="gender" property="gender"/>
+        <result column="birthday" property="birthday"/>
+        <result column="nationality" property="nationality"/>
+        <result column="occupation" property="occupation"/>
+        <result column="employment_status" property="employmentStatus"/>
+        <result column="tax_id" property="taxId"/>
+        <result column="address_region" property="addressRegion"/>
+        <result column="address_detail" property="addressDetail"/>
+        <result column="deleted" property="deleted"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+</mapper>
