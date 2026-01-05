@@ -1,6 +1,5 @@
 package com.macau.bank.auth.application.service.impl;
 
-import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.macau.bank.api.account.service.AccountRpcService;
 import com.macau.bank.api.user.request.UserCreateRpcRequest;
 import com.macau.bank.api.user.service.UserRpcService;
@@ -12,7 +11,7 @@ import com.macau.bank.auth.application.result.RegisterResult;
 import com.macau.bank.auth.application.service.AuthAppService;
 import com.macau.bank.auth.domain.entity.UserAuth;
 import com.macau.bank.auth.domain.service.AuthDomainService;
-import com.macau.bank.auth.infrastructure.mapper.UserAuthMapper;
+import com.macau.bank.auth.domain.repository.UserAuthRepository;
 import com.macau.bank.common.core.enums.LoginType;
 import com.macau.bank.common.core.exception.BusinessException;
 import com.macau.bank.common.core.result.Result;
@@ -43,9 +42,9 @@ public class AuthAppServiceImpl implements AuthAppService {
 
     @DubboReference
     private UserRpcService userRpcService;
-    
+
     @Resource
-    private UserAuthMapper userAuthMapper;
+    private UserAuthRepository userAuthRepository;
 
     @Resource
     private AuthDomainAssembler authDomainAssembler;
@@ -115,20 +114,16 @@ public class AuthAppServiceImpl implements AuthAppService {
             }
             // 手机号直接登录
             token = authDomainService.loginByMobile(loginCmd.getUserName(), loginCmd.getClientIp());
-            
+
             // 查询用户信息用于返回
-            userAuth = userAuthMapper.selectOne(new LambdaQueryWrapper<UserAuth>()
-                    .eq(UserAuth::getMobile, loginCmd.getUserName()));
+            userAuth = userAuthRepository.findByMobile(loginCmd.getUserName());
         } else {
             // 密码登录
             token = authDomainService.login(loginCmd.getUserName(), loginCmd.getPassword(), loginCmd.getClientIp());
-            
+
             // 查询用户信息
-            userAuth = userAuthMapper.selectOne(new LambdaQueryWrapper<UserAuth>()
-                    .eq(UserAuth::getUserName, loginCmd.getUserName())
-                    .or()
-                    .eq(UserAuth::getMobile, loginCmd.getUserName())
-            );
+            userAuth = userAuthRepository.findByUserNameOrMobile(
+                    loginCmd.getUserName(), loginCmd.getUserName());
         }
 
         log.info("应用服务 - 登录成功: userNo={}, token={}", userAuth.getUserNo(), token);
@@ -144,7 +139,7 @@ public class AuthAppServiceImpl implements AuthAppService {
     @Override
     public void logout(String token) {
         log.info("应用服务 - 用户登出");
-        
+
         // 2. 调用认证服务登出
         authDomainService.logout(token);
         log.info("应用服务 - 登出成功: token={}", token);
@@ -153,21 +148,21 @@ public class AuthAppServiceImpl implements AuthAppService {
     @Override
     public void updateLoginPassword(String userNo, String oldPassword, String newPassword) {
         log.info("应用服务 - 修改登录密码: userNo={}", userNo);
-        
+
         // 调用认证服务修改密码
         boolean success = authDomainService.updateLoginPassword(userNo, oldPassword, newPassword);
-        
+
         if (!success) {
             throw new BusinessException("密码修改失败");
         }
-        
+
         log.info("应用服务 - 密码修改成功: userNo={}", userNo);
     }
 
     @Override
     public void updateTransPassword(String userNo, String transactionPassword) {
         log.info("应用服务 - 设置交易密码: userNo={}", userNo);
-        
+
         // 参数校验
         if (!StringUtils.hasText(userNo)) {
             throw new BusinessException("用户不存在");
@@ -175,11 +170,11 @@ public class AuthAppServiceImpl implements AuthAppService {
 
         // 调用认证服务设置交易密码
         boolean success = authDomainService.updateTransPassword(userNo, transactionPassword);
-        
+
         if (!success) {
             throw new BusinessException("交易密码设置失败");
         }
-        
+
         log.info("应用服务 - 交易密码设置成功: userNo={}", userNo);
     }
 

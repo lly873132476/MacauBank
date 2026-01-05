@@ -3,7 +3,7 @@ package com.macau.bank.message.consumer;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.macau.bank.common.core.enums.BizType;
-import com.macau.bank.message.domain.MessageDomainService;
+import com.macau.bank.message.domain.service.MessageDomainService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
@@ -29,14 +29,15 @@ public class TransactionMessageConsumer implements RocketMQListener<String> {
 
     @Resource
     private ObjectMapper objectMapper = new ObjectMapper();
-    
+
     @Override
     public void onMessage(String message) {
         log.info("接收到银行交易事件消息: {}", message);
 
         try {
             @JsonIgnoreProperties(ignoreUnknown = true)
-            record TempDto(String userNo, String txnId, BizType bizType, BigDecimal amount, String currency) {}
+            record TempDto(String userNo, String txnId, BizType bizType, BigDecimal amount, String currency) {
+            }
             TempDto dto = objectMapper.readValue(message, TempDto.class);
             String userNo = dto.userNo();
             String txnId = dto.txnId();
@@ -44,7 +45,8 @@ public class TransactionMessageConsumer implements RocketMQListener<String> {
             BigDecimal amount = dto.amount();
             String currency = dto.currency();
 
-            if (!StringUtils.hasText(userNo) || !StringUtils.hasText(txnId)) return;
+            if (!StringUtils.hasText(userNo) || !StringUtils.hasText(txnId))
+                return;
 
             // 1. 幂等性校验 (通过 DomainService)
             if (messageDomainService.isMessageExists(txnId, userNo)) {

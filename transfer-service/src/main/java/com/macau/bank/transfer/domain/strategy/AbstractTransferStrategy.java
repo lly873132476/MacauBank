@@ -10,9 +10,11 @@ import com.macau.bank.transfer.domain.gateway.AccountGateway;
 import com.macau.bank.transfer.domain.service.TransferOrderDomainService;
 import com.macau.bank.transfer.domain.statemachine.StateMachineExecutor;
 import com.macau.bank.transfer.domain.statemachine.StateTransition;
+import com.macau.bank.transfer.domain.pipeline.TransferPhaseEnum;
 import jakarta.annotation.Resource;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 /**
  * 转账策略抽象基类 (模板方法模式)
@@ -50,7 +52,7 @@ public abstract class AbstractTransferStrategy implements TransferStrategy {
         // 统一校验 (查余额、限额)
         validator.validate(context);
 
-        //交给子类的补充
+        // 交给子类的补充
         doCustomPrepareAndValidate(context);
 
         // --- 2. 启动阶段 ---
@@ -106,4 +108,36 @@ public abstract class AbstractTransferStrategy implements TransferStrategy {
      */
     @Override
     public abstract TransferChannel getTransferChannel(TransferContext context);
+
+    /**
+     * 获取冲正流程配置（默认实现）
+     * <p>
+     * 基于订单原状态返回通用冲正路径。
+     * 子类可以重写以提供特定策略的冲正逻辑（如跨境转账需要额外通知 SWIFT）。
+     */
+    @Override
+    public StateTransition getReversalTransition(TransferStatus originalStatus) {
+        switch (originalStatus) {
+            case SUCCESS:
+                // 成功的订单：完整冲正
+                return new StateTransition(
+                        java.util.List.of(
+                                TransferPhaseEnum.REVERSE_CREDIT,
+                                TransferPhaseEnum.REVERSE_DEDUCT,
+                                TransferPhaseEnum.REVERSE_FEE),
+                        TransferStatus.REVERSED);
+
+            case FAILED:
+            case PENDING_COMPENSATION:
+            case INIT:
+            case PENDING_RISK:
+                // 失败/挂起/初始化/风控中的订单：仅解冻
+                return new StateTransition(
+                        java.util.List.of(TransferPhaseEnum.UNFREEZE),
+                        TransferStatus.REVERSED);
+
+            default:
+                return null;
+        }
+    }
 }

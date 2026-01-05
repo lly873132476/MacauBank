@@ -1,6 +1,10 @@
 package com.macau.bank.transfer.application.service.impl;
 
+import com.alibaba.csp.sentinel.annotation.SentinelResource;
+import com.macau.bank.common.core.exception.BusinessException;
 import com.macau.bank.transfer.application.command.TransferCmd;
+import com.macau.bank.transfer.application.fallback.TransferSentinelFallback;
+import com.macau.bank.transfer.common.annotation.Auditable;
 import com.macau.bank.transfer.application.result.TransferOrderResult;
 import com.macau.bank.transfer.application.result.TransferResult;
 import com.macau.bank.transfer.application.service.TransferAppService;
@@ -9,6 +13,7 @@ import com.macau.bank.transfer.domain.context.TransferContext;
 import com.macau.bank.transfer.domain.entity.TransferOrder;
 import com.macau.bank.transfer.domain.factory.TransferStrategyFactory;
 import com.macau.bank.transfer.domain.service.TransferOrderDomainService;
+import com.macau.bank.transfer.domain.service.TransferReversalDomainService;
 import com.macau.bank.transfer.domain.strategy.TransferStrategy;
 import com.macau.bank.transfer.interfaces.assembler.TransferDtoAssembler;
 import jakarta.annotation.Resource;
@@ -37,6 +42,9 @@ public class TransferAppServiceImpl implements TransferAppService {
     private TransferContextBuilder transferContextBuilder;
 
     @Override
+    @SentinelResource(value = "transfer:submit", blockHandlerClass = TransferSentinelFallback.class, blockHandler = "submitTransferBlockHandler", fallbackClass = TransferSentinelFallback.class, fallback = "submitTransferFallback", exceptionsToIgnore = {
+            BusinessException.class })
+    @Auditable(action = "TRANSFER_SUBMIT", targetType = "TRANSFER_ORDER", targetIdExpr = "#cmd.idempotentKey")
     public TransferResult submitTransfer(TransferCmd cmd) {
         log.info("应用服务 - 接收转账指令: from={}, to={}, amount={}",
                 cmd.getFromAccountNo(), cmd.getToAccountNo(), cmd.getAmount());
@@ -79,5 +87,20 @@ public class TransferAppServiceImpl implements TransferAppService {
         // 2. 调用 Domain Service 进行核心比对
         // 3. 发送消息通知
         log.info("应用层正在编排对账流程，分片：{}", shardIndex);
+    }
+
+    @Resource
+    private TransferReversalDomainService transferReversalDomainService;
+
+    @Override
+    @Auditable(action = "TRANSFER_REVERSE", targetType = "TRANSFER_ORDER", targetIdExpr = "#orderId")
+    public TransferOrderResult reverseOrder(Long orderId, String reversalReason) {
+        log.info("应用服务 - 接收冲正请求: orderId={}, reason={}", orderId, reversalReason);
+
+        // 调用领域服务执行冲正
+        TransferOrder reversedOrder = transferReversalDomainService.reverseOrder(orderId, reversalReason);
+
+        // 转换为结果对象
+        return transferDtoAssembler.toResult(reversedOrder);
     }
 }

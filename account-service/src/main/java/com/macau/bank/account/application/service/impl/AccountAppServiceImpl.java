@@ -20,6 +20,7 @@ import com.macau.bank.account.domain.entity.AccountSubLedger;
 import com.macau.bank.account.domain.model.BalanceAdjustment;
 import com.macau.bank.account.domain.model.UserAssetView;
 import com.macau.bank.account.domain.service.AccountDomainService;
+import com.macau.bank.account.domain.service.AccountBalanceDomainService;
 import com.macau.bank.api.currency.service.CurrencyRpcService;
 import com.macau.bank.api.user.response.UserInfoRpcResponse;
 import com.macau.bank.api.user.service.UserRpcService;
@@ -49,6 +50,9 @@ public class AccountAppServiceImpl implements AccountAppService {
 
     @Resource
     private AccountDomainService accountDomainService;
+
+    @Resource
+    private AccountBalanceDomainService accountBalanceDomainService;
 
     @DubboReference
     private CurrencyRpcService currencyRpcService;
@@ -214,7 +218,7 @@ public class AccountAppServiceImpl implements AccountAppService {
     @RedissonLock(key = "'lock:account:' + #cmd.accountNo")
     public boolean adjustBalance(AdjustBalanceCmd cmd) {
         BalanceAdjustment adjustment = accountDomainAssembler.toBalanceAdjustment(cmd);
-        return accountDomainService.adjustBalance(adjustment);
+        return accountBalanceDomainService.adjustBalance(adjustment);
     }
 
     @Override
@@ -237,7 +241,7 @@ public class AccountAppServiceImpl implements AccountAppService {
                 .build();
 
         // 3. 调用 Domain 层
-        return accountDomainService.adjustBalance(adjustment);
+        return accountBalanceDomainService.adjustBalance(adjustment);
     }
 
     @Override
@@ -260,14 +264,14 @@ public class AccountAppServiceImpl implements AccountAppService {
                 .build();
 
         // 3. 调用 Domain 层
-        return accountDomainService.adjustBalance(adjustment);
+        return accountBalanceDomainService.adjustBalance(adjustment);
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean freezeBalance(FreezeBalanceCmd cmd) {
         Money amount = Money.of(cmd.getAmount(), cmd.getCurrencyCode());
-        return accountDomainService.freezeBalance(cmd.getAccountNo(), amount,
+        return accountBalanceDomainService.freezeBalance(cmd.getAccountNo(), amount,
                 cmd.getFlowNo(), cmd.getFreezeType(), cmd.getReason());
     }
 
@@ -275,7 +279,7 @@ public class AccountAppServiceImpl implements AccountAppService {
     @Transactional(rollbackFor = Exception.class)
     public boolean unfreezeBalance(UnfreezeBalanceCmd cmd) {
         Money amount = Money.of(cmd.getAmount(), cmd.getCurrencyCode());
-        return accountDomainService.unfreezeBalance(cmd.getAccountNo(), amount,
+        return accountBalanceDomainService.unfreezeBalance(cmd.getAccountNo(), amount,
                 cmd.getFlowNo(), cmd.getReason());
     }
 
@@ -283,7 +287,7 @@ public class AccountAppServiceImpl implements AccountAppService {
     @Transactional(rollbackFor = Exception.class)
     public boolean unfreezeAndDebit(UnfreezeAndDebitCmd cmd) {
         Money amount = Money.of(cmd.getAmount(), cmd.getCurrencyCode());
-        return accountDomainService.unfreezeAndDebit(cmd.getAccountNo(), amount,
+        return accountBalanceDomainService.unfreezeAndDebit(cmd.getAccountNo(), amount,
                 cmd.getFlowNo(), cmd.getReason(), cmd.getBizType(), cmd.getRequestId());
     }
 
@@ -298,7 +302,8 @@ public class AccountAppServiceImpl implements AccountAppService {
         String remark = cmd.getRemark() != null ? cmd.getRemark() : "后台管理员充值";
         // 传递 requestId 用于幂等性校验
 
-        AccountBalance accountBalance = accountDomainService.getAccountBalance(cmd.getUserNo(), cmd.getCurrencyCode());
+        AccountBalance accountBalance = accountDomainService.getAccountBalance(cmd.getUserNo(),
+                cmd.getCurrencyCode());
         if (accountBalance == null) {
             throw new BusinessException(AccountErrorCode.BALANCE_RECORD_NOT_FOUND);
         }
@@ -314,7 +319,7 @@ public class AccountAppServiceImpl implements AccountAppService {
                         .bizNo(bizNo)
                         .requestId(cmd.getRequestId())
                         .build());
-        return accountDomainService.adjustBalance(adjustment);
+        return accountBalanceDomainService.adjustBalance(adjustment);
     }
 
     @Override

@@ -27,7 +27,17 @@ public enum TransferErrorCode implements IResultCode {
 
     TRANSFER_AMOUNT_EXCEED_LIMIT(303012, "超出单笔转账限额", "transfer.amount.exceed.limit"),
 
-    DUPLICATE_REQUEST(303013, "请勿重复提交", "transfer.duplicate.request");
+    DUPLICATE_REQUEST(303013, "请勿重复提交", "transfer.duplicate.request"),
+
+    // ==================== Transfer服务 - 系统错误 (3039xx) ====================
+    SYSTEM_BUSY(303901, "系统繁忙，请稍后重试", "transfer.system.busy"),
+    SYSTEM_ERROR(303902, "系统异常，请稍后重试", "transfer.system.error"),
+
+    // ==================== Transfer服务 - 冲正错误 (3038xx) ====================
+    REVERSAL_NOT_ALLOWED(303801, "订单状态不允许冲正", "transfer.reversal.not.allowed"),
+    REVERSAL_ALREADY_DONE(303802, "订单已冲正，请勿重复操作", "transfer.reversal.already.done"),
+    REVERSAL_IN_PROGRESS(303803, "订单正在冲正中", "transfer.reversal.in.progress"),
+    ORDER_NOT_FOUND(303804, "订单不存在", "transfer.order.not.found");
 
     private final Integer code;
     private final String message;

@@ -50,8 +50,6 @@ public class AccountBalanceRepositoryImpl implements AccountBalanceRepository {
         }
 
         // 【安全校验】验证 HMAC
-        // 注意：如果是老数据没有 macCode，可以配置开关决定是否通过，或者进行数据初始化
-        // 当前采用严格模式 (Strict Mode)
         verifyMacCode(po);
 
         return accountBalanceConverter.toEntity(po);
@@ -120,8 +118,12 @@ public class AccountBalanceRepositoryImpl implements AccountBalanceRepository {
             po.setUpdateTime(LocalDateTime.now());
 
             // 执行更新
-            // MyBatis-Plus @Version 会自动处理: SET version = version + 1 WHERE version = oldVersion
-            int rows = accountBalanceMapper.updateById(po);
+            // 使用自定义 updateOptimistic 确保乐观锁 (SET version = version + 1 WHERE version =
+            // oldVersion)
+            // 避免 MyBatis Plus 插件配置失效导致并发安全问题
+            log.info("Try updateById: id={}, ver={}, balance={}", po.getId(), po.getVersion(), po.getBalance());
+            int rows = accountBalanceMapper.updateOptimistic(po);
+            log.info("Updated rows: {}", rows);
 
             if (rows == 0) {
                 // 乐观锁冲突：其他线程已修改该记录

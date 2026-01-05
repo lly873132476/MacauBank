@@ -1,0 +1,36 @@
+server:
+  port: -1 # 随机端口
+
+spring:
+  application:
+    name: transfer-service-test
+  datasource:
+    url: jdbc:h2:mem:macau_bank_transfer;DB_CLOSE_DELAY=-1;MODE=MySQL
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql # 启动时建表
+
+# Dubbo 配置 (Mock 掉远程服务，防止报 No Provider)
+dubbo:
+  application:
+    name: transfer-service-test
+    logger: slf4j
+  registry:
+    address: N/A # 单元测试不连注册中心
+    check: false
+  consumer:
+    check: false # 启动时不检查服务提供者
+    timeout: 3000
+    retries: 0
+  protocol:
+    name: dubbo
+    port: -1
+
+# 开启 Mybatis Plus 日志，方便看 SQL
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl

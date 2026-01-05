@@ -35,6 +35,5 @@ public class FreezeFundHandler implements TransferHandler {
         log.info("开始请求账户服务进行冻结: txnId={}", context.getOrder().getTxnId());
         accountGateway.freeze(context.getOrder().getPayerAccountNo(), context.getOrder().getPayerCurrency(),
                 context.getAmount(), context.getOrder().getTxnId(), "转账资金冻结");
-        throw new SystemException("冻结资金后出现异常");
     }
 }

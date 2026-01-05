@@ -78,4 +78,20 @@
         LIMIT 1
     </select>
 
+    <update id="updateOptimistic" parameterType="com.macau.bank.account.infra.persistent.po.AccountBalancePO">
+        UPDATE account_balance
+        SET
+            balance = #{balance},
+            available_balance = #{availableBalance},
+            frozen_amount = #{frozenAmount},
+            total_income = #{totalIncome},
+            total_outcome = #{totalOutcome},
+            last_flow_id = #{lastFlowId},
+            mac_code = #{macCode},
+            update_time = NOW(),
+            version = version + 1
+        WHERE id = #{id}
+          AND version = #{version}
+    </update>
+
 </mapper>

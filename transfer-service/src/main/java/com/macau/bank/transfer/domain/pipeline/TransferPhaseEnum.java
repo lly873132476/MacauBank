@@ -30,5 +30,16 @@ public enum TransferPhaseEnum {
     NOTIFY_SWIFT,
 
     /** 解冻资金 - 交易失败或取消时释放冻结资金（TCC Cancel） */
-    UNFREEZE
+    UNFREEZE,
+
+    // ==================== 冲正阶段（逆向流程） ====================
+
+    /** 入账冲正 - 从收款方账户扣回资金 */
+    REVERSE_CREDIT,
+
+    /** 扣款冲正 - 将资金退回付款方账户 */
+    REVERSE_DEDUCT,
+
+    /** 手续费冲正 - 退还手续费（可选） */
+    REVERSE_FEE
 }

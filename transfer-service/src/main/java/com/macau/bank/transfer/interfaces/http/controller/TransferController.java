@@ -10,6 +10,7 @@ import com.macau.bank.transfer.application.result.TransferResult;
 import com.macau.bank.transfer.application.service.TransferAppService;
 import com.macau.bank.transfer.interfaces.http.response.TransferOrderResponse;
 import com.macau.bank.transfer.interfaces.http.response.TransferResponse;
+import com.macau.bank.transfer.interfaces.http.request.TransferReversalRequest;
 import org.springframework.web.bind.annotation.*;
 
 import org.springframework.validation.annotation.Validated;
@@ -77,5 +78,26 @@ public class TransferController {
     @GetMapping("/test-sentinel")
     public String testSentinel() {
         return "转账服务正常运行中... " + System.currentTimeMillis();
+    }
+
+    /**
+     * 冲正/退款转账订单
+     * <p>
+     * 用于处理已成功或失败的转账订单的逆向操作：
+     * - 成功订单：从收款方扣回资金，退回付款方
+     * - 失败订单：解冻被冻结的资金
+     */
+    @PostMapping("/reverse")
+    public Result<TransferOrderResponse> reverseOrder(
+            @RequestBody @Valid TransferReversalRequest request) {
+        // 1. 【拆包】 提取参数
+        Long orderId = request.getOrderId();
+        String reversalReason = request.getReversalReason();
+
+        // 2. 【办事】 Call App Service
+        TransferOrderResult result = transferAppService.reverseOrder(orderId, reversalReason);
+
+        // 3. 【包装】 Result -> Response
+        return Result.success(transferWebAssembler.toResponse(result));
     }
 }

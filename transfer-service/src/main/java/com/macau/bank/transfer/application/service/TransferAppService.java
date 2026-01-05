@@ -47,4 +47,17 @@ public interface TransferAppService {
      * @param shardIndex 分片索引（用于分布式任务调度）
      */
     void executeDailyReconciliation(int shardIndex);
+
+    /**
+     * 冲正/退款转账订单
+     * <p>
+     * 用于处理已成功或失败的转账订单的逆向操作：
+     * - 成功订单：从收款方扣回资金，退回付款方
+     * - 失败订单：解冻被冻结的资金
+     *
+     * @param orderId        订单ID
+     * @param reversalReason 冲正原因
+     * @return 冲正后的订单信息
+     */
+    TransferOrderResult reverseOrder(Long orderId, String reversalReason);
 }

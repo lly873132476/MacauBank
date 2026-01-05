@@ -1,0 +1,40 @@
+# 集成测试配置 - 使用 H2 内存数据库
+spring:
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;MODE=MySQL
+    username: sa
+    password:
+  h2:
+    console:
+      enabled: false
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:schema.sql
+      data-locations: classpath:data.sql
+  autoconfigure:
+    exclude: org.apache.rocketmq.spring.autoconfigure.RocketMQAutoConfiguration
+
+# 禁用 Dubbo 和 Nacos
+dubbo:
+  enabled: false
+
+spring.cloud.nacos.discovery:
+  enabled: false
+
+# 禁用 Seata
+seata:
+  enabled: false
+
+# 禁用 XXL-JOB
+xxl:
+  job:
+    enabled: false
+
+# MyBatis-Plus 配置
+mybatis-plus:
+  type-aliases-package: com.macau.bank.account.domain.entity
+  mapper-locations: classpath*:mapper/**/*.xml
+  configuration:
+    map-underscore-to-camel-case: true

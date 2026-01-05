@@ -16,7 +16,10 @@ public enum TransferStatus {
     PENDING_RISK("PENDING_RISK", "风控审核中"),
     SUCCESS("SUCCESS", "交易成功"),
     FAILED("FAILED", "交易失败"),
-    PENDING_COMPENSATION("PENDING_COMPENSATION", "异常挂起，需人工审核");
+    PENDING_COMPENSATION("PENDING_COMPENSATION", "异常挂起，需人工审核"),
+    REVERSING("REVERSING", "冲正处理中"),
+    REVERSED("REVERSED", "已冲正"),
+    REFUNDED("REFUNDED", "已退款");
 
     @EnumValue
     @JsonValue

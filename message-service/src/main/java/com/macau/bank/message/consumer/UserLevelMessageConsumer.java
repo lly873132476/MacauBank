@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.macau.bank.common.core.constant.MqGroupConst;
 import com.macau.bank.common.core.constant.MqTopicConst;
 import com.macau.bank.common.core.enums.UserLevel;
-import com.macau.bank.message.domain.MessageDomainService;
+import com.macau.bank.message.domain.service.MessageDomainService;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.rocketmq.spring.annotation.RocketMQMessageListener;
@@ -36,11 +36,13 @@ public class UserLevelMessageConsumer implements RocketMQListener<String> {
             // 1. 定义一个“一次性”的结构体 (JDK 14+ Record)
             // Jackson 会自动把 String "GOLD" 转成 UserLevel.GOLD
             @JsonIgnoreProperties(ignoreUnknown = true)
-            record TempDto(String userNo, UserLevel userLevel) {}
+            record TempDto(String userNo, UserLevel userLevel) {
+            }
 
             TempDto dto = objectMapper.readValue(message, TempDto.class);
 
-            if (dto == null || dto.userNo() == null || dto.userLevel() == null) return;
+            if (dto == null || dto.userNo() == null || dto.userLevel() == null)
+                return;
 
             String userNo = dto.userNo();
             UserLevel userLevel = dto.userLevel();
@@ -50,7 +52,8 @@ public class UserLevelMessageConsumer implements RocketMQListener<String> {
             params.put("level", userLevel.getCode());
 
             // 2. 调用领域服务按模版发送 (对齐 MSG_USER_LEVEL_UP)
-            messageDomainService.createMessageByTemplate(userNo, "MSG_USER_LEVEL_UP", params, userNo + "_" + userLevel.name());
+            messageDomainService.createMessageByTemplate(userNo, "MSG_USER_LEVEL_UP", params,
+                    userNo + "_" + userLevel.name());
 
             log.info("用户等级变更消息处理完成: userNo={}, newLevel={}", userNo, userLevel);
 
