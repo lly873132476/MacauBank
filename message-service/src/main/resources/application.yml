@@ -1,0 +1,73 @@
+server:
+  port: 8086
+
+spring:
+  application:
+    name: message-service
+  messages:
+    basename: i18n/messages_message
+    encoding: UTF-8
+  cloud: # Spring Cloud Nacos Discovery 配置
+    nacos:
+      discovery:
+        namespace: ${NACOS_NAMESPACE:bank-dev}
+        group: ${NACOS_SC_SPACE:SC-GROUP}
+        server-addr: ${NACOS_SERVER_ADDR:localhost}:8848
+        port: ${server.port} # 明确注册HTTP端口
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://${MYSQL_HOST:localhost}:3306/macau_bank_msg?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: 123456
+  # Redis配置
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      password: MacauBankRedis2025
+      timeout: 3000ms
+      # 现在默认是 lettuce，建议通用配置写在 pool 下
+      lettuce:
+        pool:
+          max-active: 100
+          max-idle: 20
+          min-idle: 10
+          max-wait: -1ms
+
+# RocketMQ配置
+rocketmq:
+  name-server: ${ROCKETMQ_NAMESERVER:localhost:9876}
+  consumer:
+    group: message-consumer-group
+  producer:
+    group: message-producer-group
+
+dubbo:
+  application:
+    name: message-service-rpc
+    qos-enable: true
+    qos-port: 22226
+    qos-accept-foreign-ip: false
+  registry:
+    address: nacos://${NACOS_SERVER_ADDR:localhost}:8848
+    timeout: 10000
+    parameters:
+      namespace: ${NACOS_NAMESPACE:bank-dev}
+      group: ${NACOS_DUBBO_SPACE:DUBBO-GROUP}
+  protocol:
+    name: dubbo
+    port: 22226
+  scan:
+    base-packages: com.macau.bank.message.service
+  consumer:
+    check: false
+    timeout: 3000
+  provider:
+    timeout: 3000
+
+mybatis-plus:
+  type-aliases-package: com.macau.bank.message.entity
+  mapper-locations: classpath*s:/mapper/**/*.xml # Added mapper-locations for consistency
+  configuration:
+    map-underscore-to-camel-case: true
