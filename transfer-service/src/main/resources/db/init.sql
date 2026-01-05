@@ -12,53 +12,53 @@ USE macau_bank_trans;
 -- =============================================
 -- 1. 转账订单表
 -- =============================================
+-- transfer_order: table
 CREATE TABLE `transfer_order` (
-      `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-      `txn_id` varchar(64) NOT NULL COMMENT '本行交易流水号（唯一，银行级）',
-      `external_txn_id` varchar(128) DEFAULT NULL COMMENT '外部通道/清算返回流水号',
-      `idempotent_key` varchar(100) NOT NULL COMMENT '幂等键',
-      `user_no` varchar(32) NOT NULL COMMENT '本行用户编号',
-      `payer_account_id` bigint(20) NOT NULL COMMENT '付款账户ID（本行账户）',
-      `payer_account_no` varchar(50) NOT NULL COMMENT '付款账户号',
-      `payer_account_name` varchar(100) NOT NULL COMMENT '付款账户名',
-      `payer_currency` varchar(10) NOT NULL COMMENT '付款账户币种',
-      `payee_account_no` varchar(50) NOT NULL COMMENT '收款账户号',
-      `payee_account_name` varchar(100) DEFAULT NULL COMMENT '收款人姓名',
-      `payee_bank_code` varchar(20) DEFAULT NULL COMMENT '收款银行代码',
-      `payee_swift_code` varchar(20) DEFAULT NULL COMMENT 'SWIFT代码',
-      `payee_fps_id` varchar(40) DEFAULT NULL COMMENT 'FPS ID（可选）',
-      `amount` decimal(18,2) NOT NULL COMMENT '金额（交易币种）',
-      `currency_code` varchar(10) NOT NULL COMMENT '交易币种',
-      `fee` decimal(18,2) DEFAULT '0.00' COMMENT '手续费',
-      `fee_type` varchar(20) DEFAULT 'SHA' COMMENT 'SHA/OUR/BEN',
-      `transfer_type` varchar(30) NOT NULL DEFAULT 'NORMAL' COMMENT 'NORMAL/CROSS_BORDER/FPS/SWIFT',
-      `transfer_channel` varchar(30) NOT NULL COMMENT 'INTERNAL/SWIFT/FPS/CIPS/LOCAL_CLEARING',
-      `purpose_code` varchar(20) DEFAULT NULL COMMENT '跨境用途代码',
-      `reference_no` varchar(100) DEFAULT NULL COMMENT '外部参考号，如 MT103 ID',
-      `status` varchar(20) NOT NULL DEFAULT 'PROCESSING' COMMENT 'PROCESSING/SUCCESS/FAILED',
-      `remark` varchar(255) DEFAULT NULL COMMENT '备注',
-      `fail_reason` varchar(255) DEFAULT NULL COMMENT '失败原因',
-      `aml_status` varchar(20) NOT NULL DEFAULT 'PENDING' COMMENT 'AML状态：PENDING/PASSED/REJECTED/MANUAL_REVIEW/REPORTED',
-      `aml_detail` json DEFAULT NULL COMMENT 'AML详情（命中名单、供应商返回内容）',
-      `risk_status` varchar(20) NOT NULL DEFAULT 'PENDING' COMMENT '风控状态：PENDING/PASSED/REJECTED/MANUAL_REVIEW',
-      `risk_detail` json DEFAULT NULL COMMENT '风控详情（模型评分、命中规则、行为标签）',
-      `extend_info` json DEFAULT NULL COMMENT '扩展字段（JSON），存储设备信息、特殊通道字段',
-      `deleted` tinyint(4) DEFAULT '0' COMMENT '逻辑删除',
-      `version` int(11) DEFAULT '0' COMMENT '乐观锁',
-      `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-      `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-      PRIMARY KEY (`id`),
-      UNIQUE KEY `idempotent_key` (`idempotent_key`),
-      UNIQUE KEY `uq_txn_id` (`txn_id`),
-      UNIQUE KEY `uq_idempotent` (`idempotent_key`),
-      KEY `idx_user_no` (`user_no`),
-      KEY `idx_payer_account_id` (`payer_account_id`),
-      KEY `idx_payee_account_no` (`payee_account_no`),
-      KEY `idx_payee_bank` (`payee_bank_code`,`payee_swift_code`),
-      KEY `idx_status` (`status`),
-      KEY `idx_transfer_channel` (`transfer_channel`),
-      KEY `idx_create_time` (`create_time`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='转账订单表';
+          `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+          `txn_id` varchar(64) NOT NULL COMMENT '本行交易流水号（唯一，银行级）',
+          `external_txn_id` varchar(128) DEFAULT NULL COMMENT '外部通道/清算返回流水号',
+          `idempotent_key` varchar(100) NOT NULL COMMENT '幂等键',
+          `user_no` varchar(32) NOT NULL COMMENT '本行用户编号',
+          `payer_account_no` varchar(50) NOT NULL COMMENT '付款账户号',
+          `payer_account_name` varchar(100) NOT NULL COMMENT '付款账户名',
+          `payer_currency` varchar(10) NOT NULL COMMENT '付款账户币种',
+          `payee_account_no` varchar(50) NOT NULL COMMENT '收款账户号',
+          `payee_account_name` varchar(100) DEFAULT NULL COMMENT '收款人姓名',
+          `payee_bank_code` varchar(20) DEFAULT NULL COMMENT '收款银行代码',
+          `payee_swift_code` varchar(20) DEFAULT NULL COMMENT 'SWIFT代码',
+          `payee_fps_id` varchar(40) DEFAULT NULL COMMENT 'FPS ID（可选）',
+          `amount` decimal(18,2) NOT NULL COMMENT '金额（交易币种）',
+          `currency_code` varchar(10) NOT NULL COMMENT '交易币种',
+          `fee` decimal(18,2) DEFAULT '0.00' COMMENT '手续费',
+          `fee_type` varchar(20) DEFAULT 'SHA' COMMENT 'SHA/OUR/BEN',
+          `transfer_type` varchar(30) NOT NULL DEFAULT 'NORMAL' COMMENT 'NORMAL/CROSS_BORDER/FPS/SWIFT',
+          `transfer_channel` varchar(30) NOT NULL COMMENT 'INTERNAL/SWIFT/FPS/CIPS/LOCAL_CLEARING',
+          `purpose_code` varchar(20) DEFAULT NULL COMMENT '跨境用途代码',
+          `reference_no` varchar(100) DEFAULT NULL COMMENT '外部参考号，如 MT103 ID',
+          `status` varchar(20) NOT NULL DEFAULT 'PROCESSING' COMMENT 'PROCESSING/SUCCESS/FAILED',
+          `remark` varchar(255) DEFAULT NULL COMMENT '备注',
+          `fail_reason` varchar(255) DEFAULT NULL COMMENT '失败原因',
+          `aml_status` varchar(20) NOT NULL DEFAULT 'PENDING' COMMENT 'AML状态：PENDING/PASSED/REJECTED/MANUAL_REVIEW/REPORTED',
+          `aml_detail` json DEFAULT NULL COMMENT 'AML详情（命中名单、供应商返回内容）',
+          `risk_status` varchar(20) NOT NULL DEFAULT 'PENDING' COMMENT '风控状态：PENDING/PASSED/REJECTED/MANUAL_REVIEW',
+          `risk_detail` json DEFAULT NULL COMMENT '风控详情（模型评分、命中规则、行为标签）',
+          `extend_info` json DEFAULT NULL COMMENT '扩展字段（JSON），存储设备信息、特殊通道字段',
+          `deleted` tinyint DEFAULT '0' COMMENT '逻辑删除',
+          `version` int DEFAULT '0' COMMENT '乐观锁',
+          `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+          `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+          PRIMARY KEY (`id`),
+          UNIQUE KEY `idempotent_key` (`idempotent_key`),
+          UNIQUE KEY `uq_txn_id` (`txn_id`),
+          UNIQUE KEY `uq_idempotent` (`idempotent_key`),
+          KEY `idx_user_no` (`user_no`),
+          KEY `idx_payee_account_no` (`payee_account_no`),
+          KEY `idx_payee_bank` (`payee_bank_code`,`payee_swift_code`),
+          KEY `idx_transfer_channel` (`transfer_channel`),
+          KEY `idx_create_time` (`create_time`),
+          KEY `idx_status_update_time` (`status`,`update_time`)
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='转账订单表';
+
 
 
 -- =============================================
@@ -91,7 +91,89 @@ CREATE TABLE `transfer_payee_book` (
        KEY `idx_user_time` (`user_no`,`last_trans_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='收款人表(含历史与常用)';
 
+-- bank_clearing_code: table
+CREATE TABLE `bank_clearing_code` (
+      `id` int NOT NULL AUTO_INCREMENT,
+      `region_code` varchar(5) NOT NULL DEFAULT 'MO' COMMENT '地区: MO-澳门, HK-香港, CN-内地',
+      `bank_code` varchar(20) NOT NULL COMMENT '银行简码 (如 BOC, BNU, ICBC)',
+      `bank_name_cn` varchar(100) NOT NULL COMMENT '银行中文名',
+      `bank_name_en` varchar(100) DEFAULT NULL COMMENT '银行英文名/葡文名',
+      `logo_url` varchar(255) DEFAULT NULL COMMENT '银行Logo图标',
+      `clearing_code` varchar(30) DEFAULT NULL COMMENT '本地清算号 (FPS ID / RTGS Code)',
+      `swift_code` varchar(20) DEFAULT NULL COMMENT 'SWIFT BIC Code',
+      `is_hot` tinyint DEFAULT '0' COMMENT '是否热门银行: 1-是 0-否',
+      `support_channel` varchar(50) DEFAULT 'ALL' COMMENT '支持渠道: FPS,SWIFT (逗号分隔)',
+      `status` tinyint DEFAULT '1' COMMENT '1-支持转账 0-维护中',
+      `sort_order` int DEFAULT '0' COMMENT '排序权重',
+      `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
+      `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+      PRIMARY KEY (`id`),
+      KEY `idx_region_status` (`region_code`,`status`)
+) ENGINE=InnoDB AUTO_INCREMENT=23 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='银行清算行号数据表';
 
+-- transfer_fee_config: table
+CREATE TABLE `transfer_fee_config` (
+       `id` int NOT NULL AUTO_INCREMENT,
+       `transfer_channel` varchar(30) NOT NULL COMMENT '渠道: INTERNAL, FPS, SWIFT',
+       `currency_code` varchar(10) NOT NULL COMMENT '收费币种',
+       `user_level` varchar(20) DEFAULT 'ALL' COMMENT '适用客群',
+       `fee_type` varchar(10) DEFAULT 'ALL' COMMENT '适用费用承担方式: SHA, OUR, BEN, ALL',
+       `fee_currency` varchar(10) DEFAULT 'MOP' COMMENT '手续费扣款币种',
+       `deduct_type` tinyint DEFAULT '1' COMMENT '扣费方式: 1-外扣(额外收) 2-内扣(从转账金额中扣除)',
+       `calc_mode` tinyint NOT NULL COMMENT '计费模式: 1-固定金额 2-百分比 3-固定+百分比',
+       `fixed_amount` decimal(18,2) DEFAULT '0.00' COMMENT '固定费用 (如 100.00)',
+       `rate` decimal(10,4) DEFAULT '0.0000' COMMENT '费率 (0.01 表示 1%)',
+       `min_fee` decimal(18,2) DEFAULT '0.00' COMMENT '最低收费',
+       `max_fee` decimal(18,2) DEFAULT '9999.00' COMMENT '最高收费(封顶)',
+       `description` varchar(100) DEFAULT NULL COMMENT '规则描述',
+       `status` tinyint DEFAULT '1',
+       `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
+       `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+       PRIMARY KEY (`id`),
+       KEY `idx_match` (`transfer_channel`,`currency_code`,`user_level`,`fee_type`)
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='转账手续费算费规则';
+
+-- transfer_limit_config: table
+CREATE TABLE `transfer_limit_config` (
+     `id` int NOT NULL AUTO_INCREMENT,
+     `user_level` varchar(20) NOT NULL DEFAULT 'NORMAL' COMMENT '用户等级: NORMAL-普通, KEY-U盾用户, VIP-贵宾',
+     `transfer_type` varchar(30) NOT NULL COMMENT '转账类型: INTERNAL, FPS, SWIFT, CROSS_BORDER',
+     `currency` varchar(10) NOT NULL DEFAULT 'MOP' COMMENT '限制币种',
+     `single_limit` decimal(18,2) NOT NULL COMMENT '单笔限额 (如 50000.00)',
+     `daily_limit` decimal(18,2) NOT NULL COMMENT '日累计限额 (如 100000.00)',
+     `monthly_limit` decimal(18,2) DEFAULT NULL COMMENT '月累计限额',
+     `status` tinyint DEFAULT '1' COMMENT '状态: 1-生效 0-失效',
+     `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
+     `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+     PRIMARY KEY (`id`),
+     UNIQUE KEY `uk_rule` (`user_level`,`transfer_type`,`currency`) COMMENT '同一等级同一类型币种只能有一条规则'
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='转账限额规则配置表';
+
+-- transfer_schedule: table
+CREATE TABLE `transfer_schedule` (
+     `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+     `user_no` varchar(32) NOT NULL COMMENT '用户编号',
+     `schedule_type` tinyint NOT NULL COMMENT '类型: 1-单次预约(Appointment) 2-周期性(Standing Order)',
+     `cron_expression` varchar(50) DEFAULT NULL COMMENT '周期规则Cron表达式(如 "0 0 10 1 * ?")',
+     `execute_time` datetime NOT NULL COMMENT '下一次执行时间(预约时间)',
+     `payer_account_no` varchar(50) NOT NULL COMMENT '付款账号',
+     `payee_account_no` varchar(50) NOT NULL COMMENT '收款账号',
+     `payee_name` varchar(100) DEFAULT NULL COMMENT '收款户名快照',
+     `amount` decimal(18,2) NOT NULL COMMENT '转账金额',
+     `currency_code` varchar(10) NOT NULL COMMENT '币种',
+     `transfer_channel` varchar(30) NOT NULL DEFAULT 'INTERNAL' COMMENT '渠道',
+     `status` tinyint DEFAULT '1' COMMENT '状态: 1-生效中 0-暂停 2-已结束',
+     `retry_count` int DEFAULT '0' COMMENT '连续失败次数',
+     `remark` varchar(255) DEFAULT NULL COMMENT '备注',
+     `last_execute_order_id` varchar(64) DEFAULT NULL COMMENT '最近一次成功生成的订单号(关联 transfer_order.txn_id)',
+     `last_execute_status` tinyint DEFAULT NULL COMMENT '上次执行状态',
+     `last_execute_time` datetime DEFAULT NULL COMMENT '上次执行时间',
+     `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
+     `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+     PRIMARY KEY (`id`),
+     KEY `idx_execute_status` (`status`,`execute_time`) COMMENT '定时任务扫描索引',
+     KEY `idx_user` (`user_no`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='预约与周期转账计划表';
 
 USE `macau_bank_trans`;
 

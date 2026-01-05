@@ -37,7 +37,10 @@ public enum TransferErrorCode implements IResultCode {
     REVERSAL_NOT_ALLOWED(303801, "订单状态不允许冲正", "transfer.reversal.not.allowed"),
     REVERSAL_ALREADY_DONE(303802, "订单已冲正，请勿重复操作", "transfer.reversal.already.done"),
     REVERSAL_IN_PROGRESS(303803, "订单正在冲正中", "transfer.reversal.in.progress"),
-    ORDER_NOT_FOUND(303804, "订单不存在", "transfer.order.not.found");
+    ORDER_NOT_FOUND(303804, "订单不存在", "transfer.order.not.found"),
+
+    // ==================== Transfer服务 - 并发控制 (3037xx) ====================
+    CONCURRENCY_CONFLICT(303701, "订单并发更新冲突，请重试", "transfer.concurrency.conflict");
 
     private final Integer code;
     private final String message;

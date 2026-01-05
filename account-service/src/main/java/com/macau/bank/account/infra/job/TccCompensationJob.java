@@ -4,6 +4,7 @@ import com.macau.bank.account.application.command.UnfreezeBalanceCmd;
 import com.macau.bank.account.application.service.AccountAppService;
 import com.macau.bank.account.domain.entity.AccountFreezeLog;
 import com.macau.bank.account.domain.repository.AccountFreezeLogRepository;
+import com.macau.bank.common.core.enums.FreezeStatus;
 import com.xxl.job.core.handler.annotation.XxlJob;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
@@ -50,6 +51,18 @@ public class TccCompensationJob {
         // 3. 逐条执行 Cancel (复用之前的 Cancel 逻辑)
         for (AccountFreezeLog logEntry : deadFreezeLogList) {
             try {
+                // 跳过空回滚标记
+                if (logEntry.getStatus() == FreezeStatus.CANCELLED) {
+                    log.info("   -> 跳过空回滚标记: flowNo={}", logEntry.getFlowNo());
+                    continue;
+                }
+
+                // 跳过已解冻记录
+                if (logEntry.getStatus() == FreezeStatus.UNFROZEN) {
+                    log.info("   -> 跳过已解冻记录: flowNo={}", logEntry.getFlowNo());
+                    continue;
+                }
+
                 // 调用你 Day 4 写的 cancel 方法
                 UnfreezeBalanceCmd cmd = UnfreezeBalanceCmd.builder()
                         .accountNo(logEntry.getAccountNo())

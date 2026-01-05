@@ -21,7 +21,7 @@ public class StateMachineExecutor {
 
     @Resource
     private TransactionTemplate transactionTemplate; // 编程式事务核心
-    
+
     @Resource
     private TransferOrderDomainService orderDomainService;
 
@@ -35,41 +35,51 @@ public class StateMachineExecutor {
 
     /**
      * 驱动引擎运行
-     * @param context 上下文
+     * <p>
+     * 优化说明:
+     * 1. 移除 TransactionTemplate: Handler 是 RPC 调用,不受本地事务控制
+     * 2. 单次 UPDATE 操作,MyBatis 自动提交,无需显式事务
+     * 3. 异常处理: 不改状态,保持当前状态,避免资损
+     *
+     * @param context    上下文
      * @param transition 流程配置
      */
     public void drive(TransferContext context, StateTransition transition) {
         TransferStatus currentStatus = context.getOrder().getStatus();
 
         if (transition == null) {
-            log.warn("状态机停止：当前状态无后续路径");
+            log.warn("状态机停止:当前状态无后续路径, currentStatus={}", currentStatus);
             return;
         }
 
-        // 1. 【核心】在一个新事务中执行所有 Handler + 更新状态
-        transactionTemplate.execute(status -> {
-            try {
-                log.info(">>> 状态机启动: {} -> {}", currentStatus, transition.getNextStatus());
+        try {
+            log.info(">>> 状态机启动: {} -> {}, txnId={}",
+                    currentStatus, transition.getNextStatus(), context.getOrder().getTxnId());
 
-                // 1.1 执行 Handler 链
-                for (TransferPhaseEnum phase : transition.getHandlers()) {
-                    TransferHandler handler = handlerMap.get(phase);
-                    if (handler != null) {
-                        handler.handle(context);
-                    }
+            // 1. 执行 Handler 链 (RPC 调用,不需要事务)
+            for (TransferPhaseEnum phase : transition.getHandlers()) {
+                TransferHandler handler = handlerMap.get(phase);
+                if (handler != null) {
+                    log.debug("执行 Handler: phase={}, txnId={}", phase, context.getOrder().getTxnId());
+                    handler.handle(context);
                 }
-
-                // 1.2 推进状态
-                context.getOrder().setStatus(transition.getNextStatus());
-                orderDomainService.updateOrder(context.getOrder());
-
-                return null;
-            } catch (Exception e) {
-                // 1.3 异常回滚：Handler 操作和状态更新一起回滚
-                status.setRollbackOnly();
-                log.error("状态机执行异常，事务回滚", e);
-                throw e;
             }
-        });
+
+            // 2. 更新状态 (单次 DB 操作,MyBatis 自动提交)
+            context.getOrder().setStatus(transition.getNextStatus());
+            orderDomainService.updateOrder(context.getOrder());
+
+            log.info("<<< 状态机完成: {} -> {}, txnId={}",
+                    currentStatus, transition.getNextStatus(), context.getOrder().getTxnId());
+
+        } catch (Exception e) {
+            // 3. 异常处理: 不改状态,保持当前状态
+            // 原因: Handler 可能部分成功 (如 Freeze 成功但 SendMQ 失败)
+            // 直接标记失败会导致资损 (资金已冻结但订单显示失败)
+            // 正确做法: 保持当前状态,让 MQ 重试或人工介入
+            log.error("状态机执行失败,保持当前状态: currentStatus={}, txnId={}, error={}",
+                    currentStatus, context.getOrder().getTxnId(), e.getMessage(), e);
+            throw e;
+        }
     }
 }

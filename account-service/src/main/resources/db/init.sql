@@ -94,19 +94,23 @@ CREATE TABLE `account_balance` (
 -- =============================================
 -- 4. 冻结/解冻明细表
 -- =============================================
+-- account_freeze_log: table
 CREATE TABLE `account_freeze_log` (
-      `id` BIGINT AUTO_INCREMENT PRIMARY KEY,
-      `flow_no` VARCHAR(64) NOT NULL UNIQUE COMMENT '冻结流水号',
-      `account_no` VARCHAR(32) NOT NULL,
-      `currency_code` VARCHAR(3) NOT NULL,
-      `amount` DECIMAL(18, 2) NOT NULL COMMENT '冻结金额',
-      `freeze_type` TINYINT COMMENT '类型: 1-交易冻结 2-司法冻结 3-错账冻结',
-      `reason` VARCHAR(255) COMMENT '冻结原因',
-      `status` TINYINT DEFAULT 0 COMMENT '状态: 0-已冻结 1-已解冻',
-      `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP,
-      `unfreeze_time` DATETIME COMMENT '解冻时间',
-      INDEX idx_acc_curr (`account_no`, `currency_code`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='资金冻结记录表';
+      `id` bigint NOT NULL AUTO_INCREMENT,
+      `flow_no` varchar(64) NOT NULL COMMENT '冻结流水号',
+      `account_no` varchar(32) NOT NULL,
+      `currency_code` varchar(3) NOT NULL,
+      `amount` decimal(18,2) NOT NULL COMMENT '冻结金额',
+      `freeze_type` tinyint DEFAULT NULL COMMENT '类型: 1-交易冻结 2-司法冻结 3-错账冻结',
+      `reason` varchar(255) DEFAULT NULL COMMENT '冻结原因',
+      `status` tinyint DEFAULT '0' COMMENT '状态: 0-已冻结 1-已解冻 2-已解冻',
+      `create_time` datetime DEFAULT CURRENT_TIMESTAMP,
+      `unfreeze_time` datetime DEFAULT NULL COMMENT '解冻时间',
+      PRIMARY KEY (`id`),
+      UNIQUE KEY `flow_no` (`flow_no`),
+      KEY `idx_acc_curr` (`account_no`,`currency_code`),
+      KEY `idx_status_create_time` (`status`,`create_time`)
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='资金冻结记录表';
 
 
 -- =============================================

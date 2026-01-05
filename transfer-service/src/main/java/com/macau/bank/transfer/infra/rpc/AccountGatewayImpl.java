@@ -35,7 +35,10 @@ import java.math.BigDecimal;
 @Slf4j
 public class AccountGatewayImpl implements AccountGateway {
 
-    @DubboReference
+    @DubboReference(timeout = 3000, // 超时时间 3 秒
+            retries = 0, // 不重试 (金融操作,避免重复)
+            check = false, // 启动时不检查提供者
+            version = "1.0.0")
     private AccountRpcService accountRpcService;
 
     @Resource

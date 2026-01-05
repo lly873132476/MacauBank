@@ -133,11 +133,26 @@ public class AccountBalanceDomainService {
 
     /**
      * 冻结余额
+     * <p>
+     * TCC Try 阶段 - 增加悬挂检测
      */
     @Transactional(rollbackFor = Exception.class)
     public boolean freezeBalance(String accountNo, Money amount, String flowNo, FreezeType freezeType, String reason) {
         if (!amount.isPositive()) {
             throw new BusinessException(AccountErrorCode.INVALID_OPERATION);
+        }
+
+        // 1. TCC 悬挂检测: 检查是否已经 Cancel 过
+        AccountFreezeLog existingLog = accountFreezeLogRepository.findByFlowNo(flowNo);
+        if (existingLog != null && existingLog.getStatus() == FreezeStatus.CANCELLED) {
+            log.warn("TCC 悬挂拦截: Cancel 已执行,拒绝 Try, flowNo={}, accountNo={}", flowNo, accountNo);
+            return false;
+        }
+
+        // 2. 幂等性检查: 已经冻结过
+        if (existingLog != null && existingLog.getStatus() == FreezeStatus.FROZEN) {
+            log.warn("重复冻结请求,直接返回: flowNo={}, accountNo={}", flowNo, accountNo);
+            return true;
         }
 
         AccountBalance current = accountBalanceRepository.findByAccountAndCurrency(accountNo, amount.getCurrencyCode());
@@ -170,6 +185,8 @@ public class AccountBalanceDomainService {
 
     /**
      * 解冻余额
+     * <p>
+     * TCC Cancel 阶段 - 增加空回滚检测和幂等性保护
      */
     @Transactional(rollbackFor = Exception.class)
     public boolean unfreezeBalance(String accountNo, Money amount, String flowNo, String reason) {
@@ -177,6 +194,39 @@ public class AccountBalanceDomainService {
             throw new BusinessException(AccountErrorCode.INVALID_OPERATION);
         }
 
+        // 1. 查询冻结记录
+        AccountFreezeLog freezeLog = accountFreezeLogRepository.findByFlowNo(flowNo);
+
+        // 2. TCC 空回滚检测: Try 没执行过,插入 Cancel 标记
+        if (freezeLog == null) {
+            AccountFreezeLog cancelMarker = new AccountFreezeLog();
+            cancelMarker.setFlowNo(flowNo);
+            cancelMarker.setAccountNo(accountNo);
+            cancelMarker.setCurrencyCode(amount.getCurrencyCode());
+            cancelMarker.setAmount(amount.getAmount());
+            cancelMarker.setFreezeType(FreezeType.TRANSACTION);
+            cancelMarker.setStatus(FreezeStatus.CANCELLED);
+            cancelMarker.setReason("TCC 空回滚标记: " + reason);
+            cancelMarker.setCreateTime(LocalDateTime.now());
+            accountFreezeLogRepository.save(cancelMarker);
+
+            log.warn("TCC 空回滚拦截: Try 未执行,插入 Cancel 标记, flowNo={}, accountNo={}", flowNo, accountNo);
+            return true;
+        }
+
+        // 3. 幂等性检查: 已经解冻过
+        if (freezeLog.getStatus() == FreezeStatus.UNFROZEN) {
+            log.warn("重复解冻请求,直接返回: flowNo={}, accountNo={}", flowNo, accountNo);
+            return true;
+        }
+
+        // 4. 跳过空回滚标记 (不应该走到这里,但做防御性检查)
+        if (freezeLog.getStatus() == FreezeStatus.CANCELLED) {
+            log.warn("跳过空回滚标记: flowNo={}", flowNo);
+            return true;
+        }
+
+        // 5. 正常解冻流程
         AccountBalance current = accountBalanceRepository.findByAccountAndCurrency(accountNo, amount.getCurrencyCode());
         if (current == null) {
             throw new BusinessException(AccountErrorCode.BALANCE_RECORD_NOT_FOUND);
@@ -191,13 +241,11 @@ public class AccountBalanceDomainService {
 
         accountBalanceRepository.save(current);
 
-        AccountFreezeLog freezeLog = accountFreezeLogRepository.findByFlowNo(flowNo);
-        if (freezeLog != null) {
-            freezeLog.setStatus(FreezeStatus.UNFROZEN);
-            freezeLog.setUnfreezeTime(LocalDateTime.now());
-            freezeLog.setReason(freezeLog.getReason() + " (解冻原因: " + reason + ")");
-            accountFreezeLogRepository.save(freezeLog);
-        }
+        freezeLog.setStatus(FreezeStatus.UNFROZEN);
+        freezeLog.setUnfreezeTime(LocalDateTime.now());
+        freezeLog.setReason(freezeLog.getReason() + " (解冻原因: " + reason + ")");
+        accountFreezeLogRepository.save(freezeLog);
+
         return true;
     }
 

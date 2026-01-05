@@ -2,11 +2,14 @@ package com.macau.bank.transfer.domain.service;
 
 import com.macau.bank.common.core.enums.Deleted;
 import com.macau.bank.common.core.enums.TransferStatus;
+import com.macau.bank.common.core.exception.BusinessException;
 import com.macau.bank.common.core.util.IdGenerator;
+import com.macau.bank.transfer.common.result.TransferErrorCode;
 import com.macau.bank.transfer.domain.context.TransferContext;
 import com.macau.bank.transfer.domain.entity.TransferOrder;
 import com.macau.bank.transfer.domain.repository.TransferOrderRepository;
 import jakarta.annotation.Resource;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -15,6 +18,7 @@ import java.util.List;
 /**
  * 转账订单领域服务 - 纯净领域层
  */
+@Slf4j
 @Service
 public class TransferOrderDomainService {
 
@@ -122,10 +126,20 @@ public class TransferOrderDomainService {
 
     /**
      * 根据ID更新订单，仅更新非空字段
+     * <p>
+     * 乐观锁控制: 使用 version 字段防止并发更新冲突
      *
      * @param order 订单
      */
     public void updateOrder(TransferOrder order) {
-        transferOrderRepository.save(order);
+        // MyBatis Plus 的 updateById 会自动处理 @Version 字段
+        // 如果 version 不匹配,返回 0 行受影响
+        boolean success = transferOrderRepository.save(order);
+
+        if (!success) {
+            log.error("订单更新失败,可能是并发冲突: txnId={}, version={}",
+                    order.getTxnId(), order.getVersion());
+            throw new BusinessException(TransferErrorCode.CONCURRENCY_CONFLICT);
+        }
     }
 }
