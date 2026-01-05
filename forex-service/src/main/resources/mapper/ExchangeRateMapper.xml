@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.macau.bank.forex.infrastructure.mapper.ExchangeRateMapper">
+
+    <resultMap id="BaseResultMap" type="com.macau.bank.forex.domain.entity.ExchangeRate">
+        <id column="id" property="id"/>
+        <result column="currency_pair" property="currencyPair"/>
+        <result column="base_currency" property="baseCurrency"/>
+        <result column="target_currency" property="targetCurrency"/>
+        <result column="bank_buy_rate" property="bankBuyRate"/>
+        <result column="bank_sell_rate" property="bankSellRate"/>
+        <result column="middle_rate" property="middleRate"/>
+        <result column="unit" property="unit"/>
+        <result column="status" property="status"/>
+        <result column="effect_time" property="effectTime"/>
+        <result column="expire_time" property="expireTime"/>
+        <result column="source_system" property="sourceSystem"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+</mapper>
