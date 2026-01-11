@@ -15,7 +15,7 @@ public enum FreezeStatus {
     FROZEN(0, "已冻结"),
     UNFROZEN(1, "已解冻"),
     DEDUCTED(2, "已扣款"),
-    CANCELLED(3, "已取消(空回滚标记)");
+    CANCELLED(3, "已取消");
 
     @EnumValue
     @JsonValue

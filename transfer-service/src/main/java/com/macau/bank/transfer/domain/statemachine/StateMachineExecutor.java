@@ -9,7 +9,6 @@ import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.support.TransactionTemplate;
 
 import java.util.EnumMap;
 import java.util.List;
@@ -18,9 +17,6 @@ import java.util.Map;
 @Slf4j
 @Component
 public class StateMachineExecutor {
-
-    @Resource
-    private TransactionTemplate transactionTemplate; // 编程式事务核心
 
     @Resource
     private TransferOrderDomainService orderDomainService;
