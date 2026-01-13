@@ -31,7 +31,27 @@ public interface UserAuthRepository {
     UserAuth findByUserNo(String userNo);
 
     /**
-     * 保存用户认证信息
+     * 统计用户名数量
+     */
+    Long countByUserName(String userName);
+
+    /**
+     * 统计手机号数量
+     */
+    Long countByMobile(String mobile);
+
+    /**
+     * 保存用户认证信息（新增）
      */
     void save(UserAuth userAuth);
+
+    /**
+     * 更新用户认证信息
+     */
+    void update(UserAuth userAuth);
+
+    /**
+     * 根据用户编号更新用户认证信息
+     */
+    void updateByUserNo(String userNo, UserAuth userAuth);
 }

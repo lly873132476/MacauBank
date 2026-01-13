@@ -63,7 +63,7 @@ public class StateMachineExecutor {
 
             // 2. 更新状态 (单次 DB 操作,MyBatis 自动提交)
             context.getOrder().setStatus(transition.getNextStatus());
-            orderDomainService.updateOrder(context.getOrder());
+            orderDomainService.saveOrder(context.getOrder());
 
             log.info("<<< 状态机完成: {} -> {}, txnId={}",
                     currentStatus, transition.getNextStatus(), context.getOrder().getTxnId());

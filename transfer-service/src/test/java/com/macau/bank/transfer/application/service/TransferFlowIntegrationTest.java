@@ -1,5 +1,6 @@
 package com.macau.bank.transfer.application.service;
 
+import com.macau.bank.common.core.domain.Money;
 import com.macau.bank.common.core.enums.TransferStatus;
 import com.macau.bank.common.core.enums.TransferType;
 import com.macau.bank.transfer.application.command.TransferCmd;
@@ -9,10 +10,10 @@ import com.macau.bank.transfer.domain.ability.TransferContextBuilder;
 import com.macau.bank.transfer.domain.context.TransferContext;
 import com.macau.bank.transfer.domain.entity.TransferOrder;
 import com.macau.bank.transfer.domain.factory.TransferStrategyFactory;
-import com.macau.bank.transfer.domain.model.AccountSnapshot;
 import com.macau.bank.transfer.domain.service.TransferOrderDomainService;
 import com.macau.bank.transfer.domain.strategy.TransferStrategy;
-import com.macau.bank.common.core.enums.AccountStatus;
+import com.macau.bank.transfer.domain.valobj.PayeeInfo;
+import com.macau.bank.transfer.domain.valobj.PayerInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -26,9 +27,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * 转账全流程需求测试
@@ -77,9 +80,9 @@ class TransferFlowIntegrationTest {
         // 构建转账订单
         transferOrder = new TransferOrder();
         transferOrder.setTxnId("TXN_001");
-        transferOrder.setPayerAccountNo("ACC_001");
-        transferOrder.setPayeeAccountNo("ACC_002");
-        transferOrder.setAmount(new BigDecimal("1000.00"));
+        transferOrder.setPayerInfo(PayerInfo.builder().accountNo("ACC_001").build());
+        transferOrder.setPayeeInfo(PayeeInfo.builder().accountNo("ACC_002").build());
+        transferOrder.setAmount(Money.of(new BigDecimal("1000.00"), "MOP"));
         transferOrder.setStatus(TransferStatus.INIT);
 
         // 构建转账上下文
@@ -99,11 +102,13 @@ class TransferFlowIntegrationTest {
             when(transferStrategyFactory.getStrategy(TransferType.INTERNAL)).thenReturn(mockStrategy);
             when(transferContextBuilder.build(any(TransferCmd.class))).thenReturn(transferContext);
 
-            TransferResult expectedResult = TransferResult.builder()
-                    .txnId("TXN_001")
-                    .status(TransferStatus.PENDING_RISK)
+            TransferOrder mockOrder = new TransferOrder();
+            mockOrder.setTxnId("TXN_001");
+            mockOrder.setStatus(TransferStatus.PENDING_RISK);
+            TransferContext resultContext = TransferContext.builder()
+                    .order(mockOrder)
                     .build();
-            when(mockStrategy.execute(any(TransferContext.class))).thenReturn(expectedResult);
+            when(mockStrategy.execute(any(TransferContext.class))).thenReturn(resultContext);
 
             // When - 执行转账
             TransferResult result = transferAppService.submitTransfer(transferCmd);
@@ -132,7 +137,13 @@ class TransferFlowIntegrationTest {
 
             when(transferStrategyFactory.getStrategy(transferType)).thenReturn(mockStrategy);
             when(transferContextBuilder.build(any())).thenReturn(transferContext);
-            when(mockStrategy.execute(any())).thenReturn(TransferResult.builder().txnId("TXN_001").build());
+            TransferOrder mockOrder = new TransferOrder();
+            mockOrder.setTxnId("TXN_001");
+            mockOrder.setStatus(TransferStatus.PENDING_RISK);
+            TransferContext resultContext = TransferContext.builder()
+                    .order(mockOrder)
+                    .build();
+            when(mockStrategy.execute(any())).thenReturn(resultContext);
 
             // When
             transferAppService.submitTransfer(transferCmd);
@@ -157,11 +168,17 @@ class TransferFlowIntegrationTest {
         void shouldHandleVariousAmounts(String scenario, BigDecimal amount) {
             // Given
             transferCmd.setAmount(amount);
-            transferOrder.setAmount(amount);
+            transferOrder.setAmount(Money.of(amount, "MOP"));
 
             when(transferStrategyFactory.getStrategy(any())).thenReturn(mockStrategy);
             when(transferContextBuilder.build(any())).thenReturn(transferContext);
-            when(mockStrategy.execute(any())).thenReturn(TransferResult.builder().txnId("TXN_001").build());
+            TransferOrder mockOrder = new TransferOrder();
+            mockOrder.setTxnId("TXN_001");
+            mockOrder.setStatus(TransferStatus.PENDING_RISK);
+            TransferContext resultContext = TransferContext.builder()
+                    .order(mockOrder)
+                    .build();
+            when(mockStrategy.execute(any())).thenReturn(resultContext);
 
             // When
             TransferResult result = transferAppService.submitTransfer(transferCmd);
@@ -191,11 +208,13 @@ class TransferFlowIntegrationTest {
             when(transferStrategyFactory.getStrategy(any())).thenReturn(mockStrategy);
             when(transferContextBuilder.build(any())).thenReturn(transferContext);
 
-            TransferResult expectedResult = TransferResult.builder()
-                    .txnId("TXN_001")
-                    .status(expectedStatus)
+            TransferOrder mockOrder = new TransferOrder();
+            mockOrder.setTxnId("TXN_001");
+            mockOrder.setStatus(expectedStatus);
+            TransferContext resultContext = TransferContext.builder()
+                    .order(mockOrder)
                     .build();
-            when(mockStrategy.execute(any())).thenReturn(expectedResult);
+            when(mockStrategy.execute(any())).thenReturn(resultContext);
 
             // When
             TransferResult result = transferAppService.submitTransfer(transferCmd);
@@ -220,11 +239,13 @@ class TransferFlowIntegrationTest {
             when(transferStrategyFactory.getStrategy(any())).thenReturn(mockStrategy);
             when(transferContextBuilder.build(any())).thenReturn(transferContext);
 
-            TransferResult expectedResult = TransferResult.builder()
-                    .txnId("TXN_001")
-                    .status(TransferStatus.PENDING_RISK)
+            TransferOrder mockOrder = new TransferOrder();
+            mockOrder.setTxnId("TXN_001");
+            mockOrder.setStatus(TransferStatus.PENDING_RISK);
+            TransferContext resultContext = TransferContext.builder()
+                    .order(mockOrder)
                     .build();
-            when(mockStrategy.execute(any())).thenReturn(expectedResult);
+            when(mockStrategy.execute(any())).thenReturn(resultContext);
 
             // When - 第一次调用
             TransferResult result1 = transferAppService.submitTransfer(transferCmd);

@@ -61,6 +61,6 @@ public class TransferContext {
      * 但底层还是代理给 Order
      */
     public BigDecimal getAmount() {
-        return order != null ? order.getAmount() : BigDecimal.ZERO;
+        return (order != null && order.getAmount() != null) ? order.getAmount().getAmount() : BigDecimal.ZERO;
     }
 }

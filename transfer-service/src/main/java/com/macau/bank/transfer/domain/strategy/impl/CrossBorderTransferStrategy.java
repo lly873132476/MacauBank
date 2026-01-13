@@ -30,7 +30,7 @@ public class CrossBorderTransferStrategy extends AbstractTransferStrategy {
 
     @Override
     public TransferChannel getTransferChannel(TransferContext context) {
-        if (Currency.CNY.getCode().equals(context.getOrder().getCurrencyCode())) {
+        if (Currency.CNY.getCode().equals(context.getOrder().getAmount().getCurrencyCode())) {
             return TransferChannel.CIPS; // 人民币走 CIPS
         }
         return TransferChannel.SWIFT;
@@ -38,7 +38,7 @@ public class CrossBorderTransferStrategy extends AbstractTransferStrategy {
 
     @Override
     protected void doCustomPrepareAndValidate(TransferContext context) {
-        if (!StringUtils.hasText(context.getOrder().getPayeeAccountNo())) {
+        if (!StringUtils.hasText(context.getOrder().getPayeeInfo().getAccountNo())) {
             throw new BusinessException(TransferErrorCode.TO_ACCOUNT_NOT_NULL);
         }
         // TODO: 校验 SWIFT Code 等跨境必须参数
@@ -58,14 +58,13 @@ public class CrossBorderTransferStrategy extends AbstractTransferStrategy {
         if (currentStatus == TransferStatus.PENDING_RISK) {
             if (isRiskPass) {
                 return new StateTransition(
-                        List.of(TransferPhaseEnum.DEDUCT_FEE, TransferPhaseEnum.DEDUCT_PAYER, TransferPhaseEnum.NOTIFY_SWIFT),
-                        TransferStatus.SUCCESS
-                );
+                        List.of(TransferPhaseEnum.DEDUCT_FEE, TransferPhaseEnum.DEDUCT_PAYER,
+                                TransferPhaseEnum.NOTIFY_SWIFT),
+                        TransferStatus.SUCCESS);
             } else {
                 return new StateTransition(
                         List.of(TransferPhaseEnum.UNFREEZE),
-                        TransferStatus.FAILED
-                );
+                        TransferStatus.FAILED);
             }
         }
         return null;

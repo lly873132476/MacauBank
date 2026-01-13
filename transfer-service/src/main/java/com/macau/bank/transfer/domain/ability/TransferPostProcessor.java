@@ -63,12 +63,12 @@ public class TransferPostProcessor {
     private void updatePayeeHistory(TransferContext context) {
         // 如果有收款人账号，尝试更新最近联系人
         TransferOrder order = context.getOrder();
-        if (order.getPayeeAccountNo() != null) {
+        if (order.getPayeeInfo() != null && order.getPayeeInfo().getAccountNo() != null) {
             payeeDomainService.updatePayeeHistory(
-                    order.getUserNo(),
-                    order.getPayeeAccountName(),
-                    order.getPayeeAccountNo(),
-                    order.getCurrencyCode());
+                    order.getPayerInfo().getUserNo(),
+                    order.getPayeeInfo().getAccountName(),
+                    order.getPayeeInfo().getAccountNo(),
+                    order.getAmount().getCurrencyCode());
         }
     }
 }

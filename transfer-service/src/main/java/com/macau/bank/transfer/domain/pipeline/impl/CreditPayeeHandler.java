@@ -35,8 +35,8 @@ public class CreditPayeeHandler implements TransferHandler {
 
         // 直接调用 Account 服务给收款人加钱
         accountGateway.credit(
-                context.getOrder().getPayeeAccountNo(),
-                context.getOrder().getCurrencyCode(),
+                context.getOrder().getPayeeInfo().getAccountNo(),
+                context.getOrder().getAmount().getCurrencyCode(),
                 context.getAmount(),
                 "行内转账收款",
                 context.getOrder().getTxnId(),

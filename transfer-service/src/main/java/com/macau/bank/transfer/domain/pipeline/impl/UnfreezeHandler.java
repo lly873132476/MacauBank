@@ -32,11 +32,15 @@ public class UnfreezeHandler implements TransferHandler {
 
     @Override
     public void handle(TransferContext context) {
-        log.info("阶段 [Unfreeze]: 交易终止，执行 TCC Cancel (解冻), txnId={}", context.getOrder().getTxnId());
+        log.info("阶段 [Unfreeze]: 交易终止，执行 TCC Cancel (解冻), txnId={}", context.getOrder().getAmount().getCurrencyCode());
 
         // 解冻资金
         TransferOrder order = context.getOrder();
-        accountGateway.unFreeze(order.getPayerAccountNo(), order.getCurrencyCode(), order.getAmount(), order.getTxnId(),
+        accountGateway.unFreeze(
+                context.getOrder().getPayerInfo().getAccountNo(),
+                context.getOrder().getAmount().getCurrencyCode(),
+                order.getAmount().getAmount(),
+                order.getTxnId(),
                 "转账资金解冻");
     }
 }

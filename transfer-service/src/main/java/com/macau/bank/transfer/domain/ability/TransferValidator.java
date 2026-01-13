@@ -41,7 +41,7 @@ public class TransferValidator {
         List<AccountBalanceRpcResponse> balances = fromAccount.getBalances();
         BigDecimal balance = CollectionUtils.isEmpty(balances) ? BigDecimal.ZERO
                 : balances.stream()
-                        .filter(b -> b.getCurrencyCode().equals(context.getOrder().getCurrencyCode()))
+                        .filter(b -> b.getCurrencyCode().equals(context.getOrder().getAmount().getCurrencyCode()))
                         .findFirst()
                         .map(AccountBalanceRpcResponse::getBalance)
                         .orElse(BigDecimal.ZERO);
@@ -53,7 +53,7 @@ public class TransferValidator {
         boolean safe = limitService.checkSingleLimit(
                 context.getPayerUserLevel().getCode(),
                 context.getOrder().getTransferType().name(),
-                context.getOrder().getCurrencyCode(),
+                context.getOrder().getAmount().getCurrencyCode(),
                 context.getAmount());
         if (!safe) {
             throw new BusinessException(TransferErrorCode.TRANSFER_AMOUNT_EXCEED_LIMIT);

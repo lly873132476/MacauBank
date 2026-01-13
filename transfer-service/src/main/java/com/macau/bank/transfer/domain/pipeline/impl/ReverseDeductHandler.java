@@ -37,24 +37,24 @@ public class ReverseDeductHandler implements TransferHandler {
     public void handle(TransferContext context) {
         log.info("[冲正] 开始扣款冲正: orderId={}, payerAccount={}, amount={}",
                 context.getOrder().getId(),
-                context.getOrder().getPayerAccountNo(),
-                context.getOrder().getAmount());
+                context.getOrder().getPayerInfo().getAccountNo(),
+                context.getOrder().getAmount().getAmount());
 
         // 构建冲正幂等键
         String reversalIdempotentKey = "REVERSE_DEDUCT:" + context.getOrder().getIdempotentKey();
 
         // 将资金退回付款方账户
         accountGateway.credit(
-                context.getOrder().getPayerAccountNo(),
-                context.getOrder().getCurrencyCode(),
-                context.getOrder().getAmount(),
+                context.getOrder().getPayerInfo().getAccountNo(),
+                context.getOrder().getAmount().getCurrencyCode(),
+                context.getOrder().getAmount().getAmount(),
                 "冲正退款-扣款冲正",
                 context.getOrder().getTxnId(),
                 reversalIdempotentKey);
 
         log.info("[冲正] 扣款冲正成功: orderId={}, 已退回付款方 {} 金额 {}",
                 context.getOrder().getId(),
-                context.getOrder().getPayerAccountNo(),
-                context.getOrder().getAmount());
+                context.getOrder().getPayerInfo().getAccountNo(),
+                context.getOrder().getAmount().getAmount());
     }
 }

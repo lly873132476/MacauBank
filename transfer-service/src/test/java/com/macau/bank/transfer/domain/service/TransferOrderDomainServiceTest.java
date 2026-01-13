@@ -1,11 +1,14 @@
 package com.macau.bank.transfer.domain.service;
 
+import com.macau.bank.common.core.domain.Money;
 import com.macau.bank.common.core.enums.Deleted;
 import com.macau.bank.common.core.enums.TransferStatus;
 import com.macau.bank.transfer.domain.context.TransferContext;
 import com.macau.bank.transfer.domain.entity.TransferOrder;
 import com.macau.bank.transfer.domain.model.AccountSnapshot;
 import com.macau.bank.transfer.domain.repository.TransferOrderRepository;
+import com.macau.bank.transfer.domain.valobj.PayeeInfo;
+import com.macau.bank.transfer.domain.valobj.PayerInfo;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -13,7 +16,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
-import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -22,7 +24,8 @@ import java.math.BigDecimal;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 /**
  * 转账订单领域服务测试
@@ -49,10 +52,9 @@ class TransferOrderDomainServiceTest {
     @BeforeEach
     void setUp() {
         testOrder = new TransferOrder();
-        testOrder.setPayerAccountNo("888001");
-        testOrder.setPayeeAccountNo("888002");
-        testOrder.setAmount(new BigDecimal("1000.00"));
-        testOrder.setCurrencyCode("MOP");
+        testOrder.setPayerInfo(PayerInfo.builder().accountNo("888001").accountName("张三").build());
+        testOrder.setPayeeInfo(PayeeInfo.builder().accountNo("888002").build());
+        testOrder.setAmount(Money.of(new BigDecimal("1000.00"), "MOP"));
 
         AccountSnapshot payerAccount = new AccountSnapshot();
         payerAccount.setAccountNo("888001");
@@ -90,8 +92,8 @@ class TransferOrderDomainServiceTest {
             service.createOrder(testContext);
 
             // Then
-            assertEquals("888001", testContext.getOrder().getPayerAccountNo());
-            assertEquals("张三", testContext.getOrder().getPayerAccountName());
+            assertEquals("888001", testContext.getOrder().getPayerInfo().getAccountNo());
+            assertEquals("张三", testContext.getOrder().getPayerInfo().getAccountName());
         }
     }
 
@@ -99,23 +101,18 @@ class TransferOrderDomainServiceTest {
     @DisplayName("状态更新 (参数化)")
     class StatusUpdateTests {
 
-        @DisplayName("状态更新场景覆盖")
-        @ParameterizedTest(name = "[{index}] 从 {0} 更新到 {1}, 失败原因={2}")
+        @DisplayName("updateStatus 应使用实体的状态流转")
+        @ParameterizedTest(name = "[{index}] 从 {0} 更新到 {1}")
         @CsvSource({
-                // 原状态, 目标状态, 失败原因(null表示无)
-                "INIT,           PENDING_RISK,   null",
-                "PENDING_RISK,   SUCCESS,        null",
-                "PENDING_RISK,   FAILED,         风控拒绝",
-                "SUCCESS,        REVERSED,       用户申请冲正",
-                "INIT,           FAILED,         余额不足"
+                // 原状态, 目标状态
+                "INIT,           PENDING_RISK",
+                "PENDING_RISK,   SUCCESS",
+                "SUCCESS,        REVERSING"
         })
-        void shouldUpdateStatus(String fromStatusStr,
-                String toStatusStr,
-                String failReason) {
+        void shouldUpdateStatusWithTransition(String fromStatusStr, String toStatusStr) {
             // Given
             TransferStatus fromStatus = TransferStatus.valueOf(fromStatusStr);
             TransferStatus toStatus = TransferStatus.valueOf(toStatusStr);
-            String reason = "null".equals(failReason) ? null : failReason;
 
             TransferOrder existingOrder = new TransferOrder();
             existingOrder.setTxnId("TR_TEST_001");
@@ -123,13 +120,46 @@ class TransferOrderDomainServiceTest {
             when(transferOrderRepository.findByTxnId("TR_TEST_001")).thenReturn(existingOrder);
 
             // When
-            service.updateStatus("TR_TEST_001", toStatus, reason);
+            service.updateStatus("TR_TEST_001", toStatus);
 
             // Then
             assertEquals(toStatus, existingOrder.getStatus());
-            if (reason != null) {
-                assertEquals(reason, existingOrder.getFailReason());
-            }
+            verify(transferOrderRepository).save(existingOrder);
+        }
+
+        @Test
+        @DisplayName("markFailed 应设置失败原因")
+        void shouldMarkFailedWithReason() {
+            // Given
+            TransferOrder existingOrder = new TransferOrder();
+            existingOrder.setTxnId("TR_TEST_001");
+            existingOrder.setStatus(TransferStatus.INIT);
+            when(transferOrderRepository.findByTxnId("TR_TEST_001")).thenReturn(existingOrder);
+
+            // When
+            service.markFailed("TR_TEST_001", "余额不足");
+
+            // Then
+            assertEquals(TransferStatus.FAILED, existingOrder.getStatus());
+            assertEquals("余额不足", existingOrder.getFailReason());
+            verify(transferOrderRepository).save(existingOrder);
+        }
+
+        @Test
+        @DisplayName("markSuccess 应设置外部流水号")
+        void shouldMarkSuccessWithExternalTxnId() {
+            // Given
+            TransferOrder existingOrder = new TransferOrder();
+            existingOrder.setTxnId("TR_TEST_001");
+            existingOrder.setStatus(TransferStatus.PENDING_RISK);
+            when(transferOrderRepository.findByTxnId("TR_TEST_001")).thenReturn(existingOrder);
+
+            // When
+            service.markSuccess("TR_TEST_001", "EXT_12345");
+
+            // Then
+            assertEquals(TransferStatus.SUCCESS, existingOrder.getStatus());
+            assertEquals("EXT_12345", existingOrder.getExternalTxnId());
             verify(transferOrderRepository).save(existingOrder);
         }
     }

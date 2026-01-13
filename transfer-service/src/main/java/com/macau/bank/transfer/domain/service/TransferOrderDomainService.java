@@ -7,7 +7,10 @@ import com.macau.bank.common.core.util.IdGenerator;
 import com.macau.bank.transfer.common.result.TransferErrorCode;
 import com.macau.bank.transfer.domain.context.TransferContext;
 import com.macau.bank.transfer.domain.entity.TransferOrder;
+import com.macau.bank.transfer.domain.query.TransferOrderQuery;
 import com.macau.bank.transfer.domain.repository.TransferOrderRepository;
+import com.macau.bank.transfer.domain.query.TransferOrderQuery;
+import com.macau.bank.transfer.domain.valobj.PayerInfo;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -16,7 +19,14 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * 转账订单领域服务 - 纯净领域层
+ * 转账订单领域服务
+ * <p>
+ * 职责：
+ * - 生成交易流水号
+ * - 协调订单持久化
+ * - 提供查询接口
+ * <p>
+ * 状态变更逻辑已内聚到 {@link TransferOrder} 实体
  */
 @Slf4j
 @Service
@@ -36,10 +46,13 @@ public class TransferOrderDomainService {
         order.setTxnId("TR" + IdGenerator.generateId());
 
         // 填充付款方 (从 ValObj 映射)
-        order.setPayerAccountNo(context.getPayerAccount().getAccountNo());
-        order.setPayerAccountName(context.getPayerAccount().getAccountName());
+        order.setPayerInfo(PayerInfo.fromSnapshot(
+                context.getPayerAccount().getUserNo(),
+                context.getPayerAccount().getAccountNo(),
+                context.getPayerAccount().getAccountName(),
+                context.getPayerAccount().getCurrencyCode()));
 
-        // 填充交易信息
+        // 填充交易信息（使用实体的初始化逻辑）
         order.setStatus(TransferStatus.INIT);
         order.setCreateTime(LocalDateTime.now());
         order.setUpdateTime(LocalDateTime.now());
@@ -53,37 +66,59 @@ public class TransferOrderDomainService {
     }
 
     /**
-     * 更新订单状态
+     * 更新订单状态（使用实体的状态流转保护）
      *
      * @param txnId  交易流水号
      * @param status 新状态
      */
     public void updateStatus(String txnId, TransferStatus status) {
-        updateStatus(txnId, status, null);
+        TransferOrder order = transferOrderRepository.findByTxnId(txnId);
+        if (order == null) {
+            log.warn("订单不存在: txnId={}", txnId);
+            return;
+        }
+
+        // 使用实体的状态流转方法（带状态机保护）
+        order.transitionTo(status);
+        transferOrderRepository.save(order);
     }
 
     /**
-     * 更新订单状态（带失败原因）
+     * 标记订单成功
+     *
+     * @param txnId         交易流水号
+     * @param externalTxnId 外部交易流水号（可选）
+     */
+    public void markSuccess(String txnId, String externalTxnId) {
+        TransferOrder order = transferOrderRepository.findByTxnId(txnId);
+        if (order == null) {
+            throw new BusinessException("订单不存在: " + txnId);
+        }
+
+        // 使用实体的充血方法
+        order.markSuccess(externalTxnId);
+        transferOrderRepository.save(order);
+    }
+
+    /**
+     * 标记订单失败
      *
      * @param txnId      交易流水号
-     * @param status     新状态
-     * @param failReason 失败原因（可选）
+     * @param failReason 失败原因
      */
-    public void updateStatus(String txnId, TransferStatus status, String failReason) {
+    public void markFailed(String txnId, String failReason) {
         TransferOrder order = transferOrderRepository.findByTxnId(txnId);
-        if (order != null) {
-            order.setStatus(status);
-            order.setFailReason(failReason);
-            order.setUpdateTime(LocalDateTime.now());
-            transferOrderRepository.save(order);
+        if (order == null) {
+            throw new BusinessException("订单不存在: " + txnId);
         }
+
+        // 使用实体的充血方法
+        order.markFailed(failReason);
+        transferOrderRepository.save(order);
     }
 
     /**
      * 根据主键ID查询转账订单
-     *
-     * @param id 订单主键ID
-     * @return 转账订单实体，不存在时返回 null
      */
     public TransferOrder getTransferOrderById(Long id) {
         return transferOrderRepository.findById(id);
@@ -91,51 +126,32 @@ public class TransferOrderDomainService {
 
     /**
      * 根据交易流水号查询转账订单
-     *
-     * @param txnId 交易流水号
-     * @return 转账订单实体，不存在时返回 null
      */
     public TransferOrder getTransferOrderByTxnId(String txnId) {
         return transferOrderRepository.findByTxnId(txnId);
     }
 
     /**
-     * 分页查询转账订单列表
-     *
-     * @param condition 查询条件（可包含收款账号等过滤条件）
-     * @param page      页码
-     * @param pageSize  每页数量
-     * @return 转账订单列表
+     * 查询转账订单列表
      */
-    public List<TransferOrder> getTransferOrders(TransferOrder condition, Integer page, Integer pageSize) {
-        // 分页逻辑暂由Controller/AppService处理或在Repository中增加Page支持
-        // 此处简化为直接查询列表
+    public List<TransferOrder> getTransferOrders(TransferOrderQuery condition, Integer page, Integer pageSize) {
         return transferOrderRepository.query(condition);
     }
 
     /**
      * 检查订单是否已成功
-     *
-     * @param txnId 交易流水号
-     * @return true=订单存在且状态为成功，false=订单不存在或状态非成功
      */
     public boolean checkOrderStatus(String txnId) {
         TransferOrder order = transferOrderRepository.findByTxnId(txnId);
-        return order != null && TransferStatus.SUCCESS.equals(order.getStatus());
+        return order != null && order.isTerminal()
+                && TransferStatus.SUCCESS.equals(order.getStatus());
     }
 
     /**
-     * 根据ID更新订单，仅更新非空字段
-     * <p>
-     * 乐观锁控制: 使用 version 字段防止并发更新冲突
-     *
-     * @param order 订单
+     * 保存订单（带乐观锁控制）
      */
-    public void updateOrder(TransferOrder order) {
-        // MyBatis Plus 的 updateById 会自动处理 @Version 字段
-        // 如果 version 不匹配,返回 0 行受影响
+    public void saveOrder(TransferOrder order) {
         boolean success = transferOrderRepository.save(order);
-
         if (!success) {
             log.error("订单更新失败,可能是并发冲突: txnId={}, version={}",
                     order.getTxnId(), order.getVersion());

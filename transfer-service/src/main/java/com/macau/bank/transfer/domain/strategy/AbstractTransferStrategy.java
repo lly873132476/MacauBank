@@ -2,7 +2,6 @@ package com.macau.bank.transfer.domain.strategy;
 
 import com.macau.bank.common.core.enums.TransferChannel;
 import com.macau.bank.common.core.enums.TransferStatus;
-import com.macau.bank.transfer.application.result.TransferResult;
 import com.macau.bank.transfer.domain.ability.TransferContextBuilder;
 import com.macau.bank.transfer.domain.ability.TransferValidator;
 import com.macau.bank.transfer.domain.context.TransferContext;
@@ -44,7 +43,7 @@ public abstract class AbstractTransferStrategy implements TransferStrategy {
      * 避免 RPC (enrich) 拉长事务生命周期
      */
     @Override
-    public TransferResult execute(TransferContext context) {
+    public TransferContext execute(TransferContext context) {
         // --- 1. 公共准备阶段 (这一步所有策略都一样) ---
         // 补全数据 (查户口)
         contextBuilder.enrich(context, getTransferChannel(context));
@@ -64,8 +63,8 @@ public abstract class AbstractTransferStrategy implements TransferStrategy {
         StateTransition transition = this.getNextTransition(TransferStatus.INIT, true);
         stateMachineExecutor.drive(context, transition);
 
-        // --- 4. 返回受理中 ---
-        return TransferResult.processing(context);
+        // --- 4. 返回上下文（由 Application 层组装 TransferResult）---
+        return context;
     }
 
     /**

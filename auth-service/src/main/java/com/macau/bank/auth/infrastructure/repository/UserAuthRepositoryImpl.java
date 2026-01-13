@@ -1,6 +1,7 @@
 package com.macau.bank.auth.infrastructure.repository;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
 import com.macau.bank.auth.domain.entity.UserAuth;
 import com.macau.bank.auth.domain.repository.UserAuthRepository;
 import com.macau.bank.auth.infrastructure.mapper.UserAuthMapper;
@@ -45,11 +46,30 @@ public class UserAuthRepositoryImpl implements UserAuthRepository {
     }
 
     @Override
+    public Long countByUserName(String userName) {
+        return userAuthMapper.selectCount(new LambdaQueryWrapper<UserAuth>()
+                .eq(UserAuth::getUserName, userName));
+    }
+
+    @Override
+    public Long countByMobile(String mobile) {
+        return userAuthMapper.selectCount(new LambdaQueryWrapper<UserAuth>()
+                .eq(UserAuth::getMobile, mobile));
+    }
+
+    @Override
     public void save(UserAuth userAuth) {
-        if (userAuth.getId() == null) {
-            userAuthMapper.insert(userAuth);
-        } else {
-            userAuthMapper.updateById(userAuth);
-        }
+        userAuthMapper.insert(userAuth);
+    }
+
+    @Override
+    public void update(UserAuth userAuth) {
+        userAuthMapper.updateById(userAuth);
+    }
+
+    @Override
+    public void updateByUserNo(String userNo, UserAuth userAuth) {
+        userAuthMapper.update(userAuth, new LambdaUpdateWrapper<UserAuth>()
+                .eq(UserAuth::getUserNo, userNo));
     }
 }

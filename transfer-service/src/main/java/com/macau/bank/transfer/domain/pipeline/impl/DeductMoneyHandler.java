@@ -36,12 +36,16 @@ public class DeductMoneyHandler implements TransferHandler {
 
     @Override
     public void handle(TransferContext context) {
-        log.info("阶段 [DeductMoney]: 风控通过，执行 TCC Confirm (实扣), txnId={}", context.getOrder().getTxnId());
+        log.info("阶段 [DeductMoney]: 风控通过，执行 TCC Confirm (实扣), txnId={}",
+                context.getOrder().getPayerInfo().getAccountNo());
 
         // 调用 TCC Confirm 接口
         // 关键点：传 txnId，Account 服务会根据 txnId 找到那条 "FROZEN" 记录，并将其核销
         TransferOrder order = context.getOrder();
-        accountGateway.unfreezeAndDebit(order.getPayerAccountNo(), order.getCurrencyCode(), order.getAmount(),
+        accountGateway.unfreezeAndDebit(
+                context.getOrder().getPayerInfo().getAccountNo(),
+                context.getOrder().getAmount().getCurrencyCode(),
+                order.getAmount().getAmount(),
                 order.getTxnId(), "转账资金解冻", BizType.TRANSFER_OUT, order.getIdempotentKey() + "_PAYER");
     }
 }

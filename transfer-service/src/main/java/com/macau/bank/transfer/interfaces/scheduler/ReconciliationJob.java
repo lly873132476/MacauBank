@@ -25,7 +25,6 @@ public class ReconciliationJob {
         XxlJobHelper.log("开始调度对账任务...");
 
         // 2. 委派给应用层执行 (Orchestration)
-        // 注意：不要在这里写 for 循环查库，那是 Application 层的活
         transferAppService.executeDailyReconciliation(shardIndex);
         
         XxlJobHelper.log("调度结束");

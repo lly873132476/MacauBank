@@ -4,7 +4,6 @@ import com.macau.bank.common.core.enums.KycLevel;
 import com.macau.bank.common.core.enums.KycStatus;
 import com.macau.bank.common.core.enums.UserLevel;
 import com.macau.bank.common.core.exception.BusinessException;
-import com.macau.bank.user.application.assembler.UserDomainAssembler;
 import com.macau.bank.user.domain.entity.UserInfo;
 import com.macau.bank.user.domain.repository.UserInfoRepository;
 import jakarta.annotation.Resource;
@@ -27,9 +26,6 @@ public class UserDomainService {
 
     @Resource
     private UserInfoRepository userInfoRepository;
-
-    @Resource
-    private UserDomainAssembler userDomainAssembler;
 
     @Resource
     private RocketMQTemplate rocketMQTemplate;
@@ -83,7 +79,8 @@ public class UserDomainService {
             throw new BusinessException("已通过实名认证，无需重复提交");
         }
 
-        userDomainAssembler.updateEntity(certificationInfo, existingUser);
+        // 使用实体内部方法更新，避免依赖 Application 层 Assembler
+        existingUser.copyFromCertification(certificationInfo);
 
         existingUser.setKycStatus(KycStatus.PENDING);
         existingUser.setUpdateTime(LocalDateTime.now());

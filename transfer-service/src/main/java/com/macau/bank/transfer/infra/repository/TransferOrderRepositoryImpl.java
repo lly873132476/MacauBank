@@ -2,6 +2,7 @@ package com.macau.bank.transfer.infra.repository;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.macau.bank.transfer.domain.entity.TransferOrder;
+import com.macau.bank.transfer.domain.query.TransferOrderQuery;
 import com.macau.bank.transfer.domain.repository.TransferOrderRepository;
 import com.macau.bank.transfer.infra.mapper.TransferOrderMapper;
 import com.macau.bank.transfer.infra.persistent.converter.TransferOrderPOConverter;
@@ -9,6 +10,7 @@ import com.macau.bank.transfer.infra.persistent.po.TransferOrderPO;
 import jakarta.annotation.Resource;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Objects;
 
 @Repository
@@ -56,12 +58,15 @@ public class TransferOrderRepositoryImpl implements TransferOrderRepository {
     }
 
     @Override
-    public java.util.List<TransferOrder> query(TransferOrder condition) {
+    public java.util.List<TransferOrder> query(TransferOrderQuery condition) {
         LambdaQueryWrapper<TransferOrderPO> wrapper = new LambdaQueryWrapper<>();
         if (condition != null) {
-            wrapper.eq(condition.getUserNo() != null, TransferOrderPO::getUserNo, condition.getUserNo());
-            wrapper.eq(condition.getPayeeAccountNo() != null && !condition.getPayeeAccountNo().isEmpty(),
-                    TransferOrderPO::getPayeeAccountNo, condition.getPayeeAccountNo());
+            String userNo = condition.getPayerUserNo();
+            String payeeAcc = condition.getPayeeAccountNo();
+
+            wrapper.eq(userNo != null, TransferOrderPO::getUserNo, userNo);
+            wrapper.eq(payeeAcc != null && !payeeAcc.isEmpty(),
+                    TransferOrderPO::getPayeeAccountNo, payeeAcc);
             wrapper.eq(condition.getStatus() != null, TransferOrderPO::getStatus, condition.getStatus());
         }
         wrapper.orderByDesc(TransferOrderPO::getCreateTime);

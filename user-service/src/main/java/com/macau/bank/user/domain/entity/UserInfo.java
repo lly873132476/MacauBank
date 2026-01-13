@@ -152,4 +152,50 @@ public class UserInfo implements Serializable {
      * 更新时间
      */
     private LocalDateTime updateTime;
+
+    // ==================== 领域行为 ====================
+
+    /**
+     * 从认证信息更新实体（用于实名认证场景）
+     * <p>
+     * 将实体更新逻辑内聚到 Domain 层，避免 Domain 依赖 Application 层的 Assembler
+     *
+     * @param source 认证信息来源
+     */
+    public void copyFromCertification(UserInfo source) {
+        if (source.getRealNameCn() != null)
+            this.realNameCn = source.getRealNameCn();
+        if (source.getRealNameEn() != null)
+            this.realNameEn = source.getRealNameEn();
+        if (source.getIdCardType() != null)
+            this.idCardType = source.getIdCardType();
+        if (source.getIdCardNo() != null)
+            this.idCardNo = source.getIdCardNo();
+        if (source.getIdCardExpiry() != null)
+            this.idCardExpiry = source.getIdCardExpiry();
+        if (source.getIdCardIssueCountry() != null)
+            this.idCardIssueCountry = source.getIdCardIssueCountry();
+        if (source.getIdCardIssueOrg() != null)
+            this.idCardIssueOrg = source.getIdCardIssueOrg();
+        if (source.getIdCardImgFront() != null)
+            this.idCardImgFront = source.getIdCardImgFront();
+        if (source.getIdCardImgBack() != null)
+            this.idCardImgBack = source.getIdCardImgBack();
+        if (source.getGender() != null)
+            this.gender = source.getGender();
+        if (source.getBirthday() != null)
+            this.birthday = source.getBirthday();
+        if (source.getNationality() != null)
+            this.nationality = source.getNationality();
+        if (source.getOccupation() != null)
+            this.occupation = source.getOccupation();
+        if (source.getEmploymentStatus() != null)
+            this.employmentStatus = source.getEmploymentStatus();
+        if (source.getTaxId() != null)
+            this.taxId = source.getTaxId();
+        if (source.getAddressRegion() != null)
+            this.addressRegion = source.getAddressRegion();
+        if (source.getAddressDetail() != null)
+            this.addressDetail = source.getAddressDetail();
+    }
 }

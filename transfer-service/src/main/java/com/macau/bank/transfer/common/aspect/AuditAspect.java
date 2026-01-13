@@ -3,7 +3,7 @@ package com.macau.bank.transfer.common.aspect;
 import cn.hutool.json.JSONUtil;
 import com.macau.bank.transfer.common.annotation.Auditable;
 import com.macau.bank.transfer.domain.repository.AuditLogRepository;
-import com.macau.bank.transfer.infra.persistent.entity.AuditLogDO;
+import com.macau.bank.transfer.domain.entity.AuditLog;
 import jakarta.annotation.Resource;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -55,7 +55,7 @@ public class AuditAspect {
         long startTime = System.currentTimeMillis();
 
         // 构建审计日志
-        AuditLogDO auditLog = new AuditLogDO();
+        AuditLog auditLog = new AuditLog();
         auditLog.setTraceId(getTraceId());
         auditLog.setUserId(getCurrentUserId());
         auditLog.setAction(auditable.action());
@@ -168,7 +168,7 @@ public class AuditAspect {
     /**
      * 填充客户端信息
      */
-    private void fillClientInfo(AuditLogDO auditLog) {
+    private void fillClientInfo(AuditLog auditLog) {
         HttpServletRequest request = getRequest();
         if (request != null) {
             auditLog.setClientIp(getClientIp(request));
@@ -216,7 +216,7 @@ public class AuditAspect {
     /**
      * 保存审计日志（通过 Repository）
      */
-    private void saveAuditLog(AuditLogDO auditLog) {
+    private void saveAuditLog(AuditLog auditLog) {
         auditLogRepository.save(auditLog);
     }
 }

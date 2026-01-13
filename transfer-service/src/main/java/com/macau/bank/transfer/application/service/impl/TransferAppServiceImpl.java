@@ -11,11 +11,12 @@ import com.macau.bank.transfer.application.service.TransferAppService;
 import com.macau.bank.transfer.domain.ability.TransferContextBuilder;
 import com.macau.bank.transfer.domain.context.TransferContext;
 import com.macau.bank.transfer.domain.entity.TransferOrder;
+import com.macau.bank.transfer.domain.query.TransferOrderQuery;
 import com.macau.bank.transfer.domain.factory.TransferStrategyFactory;
 import com.macau.bank.transfer.domain.service.TransferOrderDomainService;
 import com.macau.bank.transfer.domain.service.TransferReversalDomainService;
 import com.macau.bank.transfer.domain.strategy.TransferStrategy;
-import com.macau.bank.transfer.interfaces.assembler.TransferDtoAssembler;
+import com.macau.bank.transfer.application.assembler.TransferDtoAssembler;
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -55,16 +56,20 @@ public class TransferAppServiceImpl implements TransferAppService {
         // 2. 构建上下文 (Cmd -> Context)
         TransferContext context = transferContextBuilder.build(cmd);
 
-        // 3. 执行转账
-        return strategy.execute(context);
+        // 3. 执行转账（Domain 层返回 Context）
+        TransferContext executedContext = strategy.execute(context);
+
+        // 4. Application 层组装结果
+        return TransferResult.fromContext(executedContext);
     }
 
     @Override
     public List<TransferOrderResult> getTransferOrders(Long payerAccountId, String payeeAccountNumber,
             Integer page, Integer pageSize) {
         // 构建查询条件
-        TransferOrder condition = new TransferOrder();
-        condition.setPayeeAccountNo(payeeAccountNumber);
+        TransferOrderQuery condition = TransferOrderQuery.builder()
+                .payeeAccountNo(payeeAccountNumber)
+                .build();
 
         List<TransferOrder> records = transferOrderDomainService.getTransferOrders(condition, page, pageSize);
 

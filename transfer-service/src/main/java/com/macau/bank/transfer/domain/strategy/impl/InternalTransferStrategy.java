@@ -35,7 +35,7 @@ public class InternalTransferStrategy extends AbstractTransferStrategy {
     @Override
     protected void doCustomPrepareAndValidate(TransferContext context) {
         // 1. 查询收款账户
-        String toAccountNo = context.getOrder().getPayeeAccountNo();
+        String toAccountNo = context.getOrder().getPayeeInfo().getAccountNo();
 
         // 行内转账特有校验：收款人必须是本行账户
         if (!toAccountNo.startsWith("888") && !toAccountNo.startsWith("628888")) {
@@ -56,8 +56,11 @@ public class InternalTransferStrategy extends AbstractTransferStrategy {
         }
 
         // 2. 提前把收款人信息塞进上下文
-        context.getOrder().setPayeeAccountNo(toAccount.getAccountNo());
-        context.getOrder().setPayeeAccountName(toAccount.getAccountName());
+        // update immutable PayeeInfo
+        context.getOrder().setPayeeInfo(
+                context.getOrder().getPayeeInfo().toBuilder()
+                        .accountName(toAccount.getAccountName())
+                        .build());
         context.setPayeeAccount(toAccount);
     }
 
@@ -69,16 +72,15 @@ public class InternalTransferStrategy extends AbstractTransferStrategy {
             // 或者也走风控，但 Handler 不同
             return new StateTransition(
                     List.of(TransferPhaseEnum.FREEZE_FUND, TransferPhaseEnum.SEND_RISK_MQ),
-                    TransferStatus.PENDING_RISK
-            );
+                    TransferStatus.PENDING_RISK);
         }
 
         if (currentStatus == TransferStatus.PENDING_RISK && isRiskPass) {
             return new StateTransition(
                     // 这里的区别是：CreditPayee (直接入账)，没有 NotifySwift
-                    List.of(TransferPhaseEnum.DEDUCT_FEE, TransferPhaseEnum.DEDUCT_PAYER, TransferPhaseEnum.CREDIT_PAYEE),
-                    TransferStatus.SUCCESS
-            );
+                    List.of(TransferPhaseEnum.DEDUCT_FEE, TransferPhaseEnum.DEDUCT_PAYER,
+                            TransferPhaseEnum.CREDIT_PAYEE),
+                    TransferStatus.SUCCESS);
         }
         // ...
         return null;

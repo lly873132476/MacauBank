@@ -1,7 +1,7 @@
 package com.macau.bank.transfer.domain.repository;
 
 import com.macau.bank.transfer.domain.entity.TransferOrder;
-
+import com.macau.bank.transfer.domain.query.TransferOrderQuery;
 import java.util.List;
 
 /**
@@ -41,6 +41,6 @@ public interface TransferOrderRepository {
      * @param condition 查询条件
      * @return 结果列表
      */
-    List<TransferOrder> query(TransferOrder condition);
+    List<TransferOrder> query(TransferOrderQuery condition);
 
 }

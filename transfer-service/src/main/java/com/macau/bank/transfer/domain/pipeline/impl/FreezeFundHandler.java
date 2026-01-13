@@ -33,7 +33,8 @@ public class FreezeFundHandler implements TransferHandler {
     @Override
     public void handle(TransferContext context) {
         log.info("开始请求账户服务进行冻结: txnId={}", context.getOrder().getTxnId());
-        accountGateway.freeze(context.getOrder().getPayerAccountNo(), context.getOrder().getPayerCurrency(),
+        accountGateway.freeze(context.getOrder().getPayerInfo().getAccountNo(),
+                context.getOrder().getPayerInfo().getCurrency(),
                 context.getAmount(), context.getOrder().getTxnId(), "转账资金冻结");
     }
 }

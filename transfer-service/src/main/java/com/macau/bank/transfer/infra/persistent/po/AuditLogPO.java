@@ -1,4 +1,4 @@
-package com.macau.bank.transfer.infra.persistent.entity;
+package com.macau.bank.transfer.infra.persistent.po;
 
 import com.baomidou.mybatisplus.annotation.*;
 import lombok.Getter;
@@ -8,7 +8,7 @@ import lombok.ToString;
 import java.time.LocalDateTime;
 
 /**
- * 审计日志实体
+ * 审计日志持久化对象（PO）
  * <p>
  * 记录系统中所有关键操作的审计轨迹，用于：
  * 1. 事后问题追溯
@@ -19,7 +19,7 @@ import java.time.LocalDateTime;
 @Setter
 @ToString
 @TableName("audit_log")
-public class AuditLogDO {
+public class AuditLogPO {
 
     /**
      * 主键ID

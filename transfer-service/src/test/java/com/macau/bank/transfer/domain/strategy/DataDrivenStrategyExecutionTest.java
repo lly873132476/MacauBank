@@ -1,9 +1,9 @@
 package com.macau.bank.transfer.domain.strategy;
 
+import com.macau.bank.common.core.domain.Money;
 import com.macau.bank.common.core.enums.BizType;
 import com.macau.bank.common.core.enums.TransferStatus;
 import com.macau.bank.common.core.enums.TransferType;
-import com.macau.bank.transfer.application.result.TransferResult;
 import com.macau.bank.transfer.domain.ability.TransferContextBuilder;
 import com.macau.bank.transfer.domain.ability.TransferValidator;
 import com.macau.bank.transfer.domain.context.TransferContext;
@@ -16,6 +16,8 @@ import com.macau.bank.transfer.domain.service.TransferOrderDomainService;
 import com.macau.bank.transfer.domain.statemachine.StateMachineExecutor;
 import com.macau.bank.transfer.domain.strategy.impl.CrossBorderTransferStrategy;
 import com.macau.bank.transfer.domain.strategy.impl.InternalTransferStrategy;
+import com.macau.bank.transfer.domain.valobj.PayeeInfo;
+import com.macau.bank.transfer.domain.valobj.PayerInfo;
 import org.apache.rocketmq.spring.core.RocketMQTemplate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -25,8 +27,6 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 
 import java.math.BigDecimal;
@@ -77,14 +77,7 @@ class DataDrivenStrategyExecutionTest {
     void setUp() {
         // 1. 初始化状态机执行器
         stateMachineExecutor = new StateMachineExecutor();
-        ReflectionTestUtils.setField(stateMachineExecutor, "transactionTemplate", transactionTemplate);
         ReflectionTestUtils.setField(stateMachineExecutor, "orderDomainService", orderDomainService);
-
-        // Mock 事务执行
-        when(transactionTemplate.execute(any())).thenAnswer(invocation -> {
-            TransactionCallback<?> callback = invocation.getArgument(0);
-            return callback.doInTransaction(mock(TransactionStatus.class));
-        });
 
         // 2. === 手动装配真实 Handler 链 ===
         List<TransferHandler> handlers = new ArrayList<>();
@@ -174,10 +167,9 @@ class DataDrivenStrategyExecutionTest {
         TransferOrder order = new TransferOrder();
         order.setTxnId("TXN_" + System.currentTimeMillis());
         order.setIdempotentKey("KEY_" + System.currentTimeMillis());
-        order.setPayerAccountNo(payerNo);
-        order.setPayeeAccountNo(payeeNo);
-        order.setAmount(amount);
-        order.setCurrencyCode(currency);
+        order.setPayerInfo(PayerInfo.builder().accountNo(payerNo).currency(currency).build());
+        order.setPayeeInfo(PayeeInfo.builder().accountNo(payeeNo).build());
+        order.setAmount(Money.of(amount, currency));
         order.setFee(fee);
         order.setStatus(initStatus);
 
@@ -196,8 +188,8 @@ class DataDrivenStrategyExecutionTest {
 
         if (initStatus == TransferStatus.INIT) {
             // 提交阶段：App -> Strategy.execute
-            TransferResult result = strategy.execute(context);
-            assertEquals(expectedStatus, result.getStatus());
+            TransferContext executedContext = strategy.execute(context);
+            assertEquals(expectedStatus, executedContext.getOrder().getStatus());
         } else {
             // 回调阶段：StateMachine.drive
             var transition = strategy.getNextTransition(initStatus, isRiskPass);

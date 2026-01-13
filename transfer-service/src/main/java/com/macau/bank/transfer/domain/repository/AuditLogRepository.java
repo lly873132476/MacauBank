@@ -1,6 +1,6 @@
 package com.macau.bank.transfer.domain.repository;
 
-import com.macau.bank.transfer.infra.persistent.entity.AuditLogDO;
+import com.macau.bank.transfer.domain.entity.AuditLog;
 
 /**
  * 审计日志仓储接口
@@ -13,7 +13,7 @@ public interface AuditLogRepository {
     /**
      * 保存审计日志
      *
-     * @param auditLog 审计日志实体
+     * @param auditLog 审计日志领域实体
      */
-    void save(AuditLogDO auditLog);
+    void save(AuditLog auditLog);
 }

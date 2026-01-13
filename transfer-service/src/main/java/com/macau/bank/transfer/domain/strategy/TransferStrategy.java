@@ -3,7 +3,6 @@ package com.macau.bank.transfer.domain.strategy;
 import com.macau.bank.common.core.enums.TransferChannel;
 import com.macau.bank.common.core.enums.TransferStatus;
 import com.macau.bank.common.core.enums.TransferType;
-import com.macau.bank.transfer.application.result.TransferResult;
 import com.macau.bank.transfer.domain.context.TransferContext;
 import com.macau.bank.transfer.domain.statemachine.StateTransition;
 
@@ -39,11 +38,13 @@ public interface TransferStrategy {
 
     /**
      * 执行转账
+     * <p>
+     * 领域层执行，返回更新后的上下文，Application 层负责组装 TransferResult
      *
      * @param context 转账上下文
-     * @return 转账结果
+     * @return 执行后的转账上下文（包含订单状态等信息）
      */
-    TransferResult execute(TransferContext context);
+    TransferContext execute(TransferContext context);
 
     /**
      * 计算手续费

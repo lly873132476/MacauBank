@@ -47,7 +47,7 @@ public class ReverseFeeHandler implements TransferHandler {
 
         log.info("[冲正] 开始手续费冲正: orderId={}, payerAccount={}, fee={}",
                 context.getOrder().getId(),
-                context.getOrder().getPayerAccountNo(),
+                context.getOrder().getPayerInfo().getAccountNo(),
                 fee);
 
         // 构建冲正幂等键
@@ -55,8 +55,8 @@ public class ReverseFeeHandler implements TransferHandler {
 
         // 将手续费退回付款方账户
         accountGateway.credit(
-                context.getOrder().getPayerAccountNo(),
-                context.getOrder().getCurrencyCode(),
+                context.getOrder().getPayerInfo().getAccountNo(),
+                context.getOrder().getAmount().getCurrencyCode(),
                 fee,
                 "冲正退款-手续费冲正",
                 context.getOrder().getTxnId(),
@@ -64,7 +64,7 @@ public class ReverseFeeHandler implements TransferHandler {
 
         log.info("[冲正] 手续费冲正成功: orderId={}, 已退回付款方 {} 手续费 {}",
                 context.getOrder().getId(),
-                context.getOrder().getPayerAccountNo(),
+                context.getOrder().getPayerInfo().getAccountNo(),
                 fee);
     }
 }

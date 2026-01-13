@@ -47,7 +47,9 @@ public class DeductFeeHandler implements TransferHandler {
 
         // 这里假设手续费是立即扣除的
         TransferOrder order = context.getOrder();
-        accountGateway.debit(order.getPayerAccountNo(), order.getCurrencyCode(), fee, "转账手续费", order.getTxnId(),
+        accountGateway.debit(
+                context.getOrder().getPayerInfo().getAccountNo(),
+                context.getOrder().getAmount().getCurrencyCode(), fee, "转账手续费", order.getTxnId(),
                 order.getIdempotentKey() + "_FEE");
 
     }

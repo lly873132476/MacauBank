@@ -40,7 +40,7 @@ public class SendRiskMqHandler implements TransferHandler {
         // 构造消息体 (必须包含 txnId 以便回调接力)
         RiskRequestMsg msg = new RiskRequestMsg();
         msg.setTxnId(context.getOrder().getTxnId());
-        msg.setAccountNo(context.getOrder().getPayerAccountNo());
+        msg.setAccountNo(context.getOrder().getPayerInfo().getAccountNo());
         msg.setAmount(context.getAmount());
         msg.setTargetCountry("MO");
 
