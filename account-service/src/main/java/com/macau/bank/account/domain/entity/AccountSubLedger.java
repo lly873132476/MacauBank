@@ -3,6 +3,7 @@ package com.macau.bank.account.domain.entity;
 import com.macau.bank.common.core.enums.*;
 import lombok.*;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -19,6 +20,8 @@ import java.util.Map;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AccountSubLedger implements Serializable {
+
+    @Serial
     private static final long serialVersionUID = 1L;
 
     private Long id;

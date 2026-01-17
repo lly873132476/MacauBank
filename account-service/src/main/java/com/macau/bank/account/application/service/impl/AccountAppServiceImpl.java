@@ -36,6 +36,7 @@ import org.apache.dubbo.config.annotation.DubboReference;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.macau.bank.account.infra.tcc.TccProtectionService;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -53,6 +54,9 @@ public class AccountAppServiceImpl implements AccountAppService {
 
     @Resource
     private AccountBalanceDomainService accountBalanceDomainService;
+
+    @Resource
+    private TccProtectionService tccProtectionService;
 
     @DubboReference
     private CurrencyRpcService currencyRpcService;
@@ -270,6 +274,12 @@ public class AccountAppServiceImpl implements AccountAppService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public boolean freezeBalance(FreezeBalanceCmd cmd) {
+        // 1. TCC 协议检查：悬挂检测
+        if (!tccProtectionService.checkTryAllowed(cmd.getFlowNo())) {
+            return false;
+        }
+
+        // 2. 调用领域服务（纯业务逻辑）
         Money amount = Money.of(cmd.getAmount(), cmd.getCurrencyCode());
         return accountBalanceDomainService.freezeBalance(cmd.getAccountNo(), amount,
                 cmd.getFlowNo(), cmd.getFreezeType(), cmd.getReason());
@@ -279,6 +289,13 @@ public class AccountAppServiceImpl implements AccountAppService {
     @Transactional(rollbackFor = Exception.class)
     public boolean unfreezeBalance(UnfreezeBalanceCmd cmd) {
         Money amount = Money.of(cmd.getAmount(), cmd.getCurrencyCode());
+
+        // 1. TCC 空回滚检测
+        if (!tccProtectionService.handleEmptyRollback(cmd.getFlowNo(), cmd.getAccountNo(), amount)) {
+            return true; // 空回滚已处理，直接返回成功
+        }
+
+        // 2. 调用领域服务（纯业务逻辑）
         return accountBalanceDomainService.unfreezeBalance(cmd.getAccountNo(), amount,
                 cmd.getFlowNo(), cmd.getReason());
     }
